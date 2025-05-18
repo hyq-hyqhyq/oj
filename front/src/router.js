@@ -19,6 +19,9 @@ import ArticleDetails from "@/components/ArticleDetails"
 import Contest_Question from "@/components/Contest_Question"
 import AnswerQuestion_contest from '@/components/AnswerQuestion_contest'
 import ContestStatistics from '@/components/Statistics'
+import TeacherHome from '@/components/TeacherHome.vue'
+import AssistantHome from '@/components/AssistantHome.vue'
+import Setting from '@/components/Setting.vue';
 
 
 Vue.use(Router)
@@ -44,6 +47,16 @@ export default new Router({
       component: Index,
     },
     {
+      path: '/teacher',
+      name: 'TeacherHome',
+      component: TeacherHome,
+    },
+    {
+      path: '/assistant',
+      name: 'AssistantHome',
+      component: AssistantHome,
+    },
+    {
       path: '/import',
       name: 'import',
       component: ImportQuestions
@@ -57,6 +70,11 @@ export default new Router({
       path: '/submit',
       name: 'submit',
       component: Submit
+    },
+    {
+      path: '/setting',
+      name: 'setting',
+      component: Setting,
     },
     {
       path: '/question',

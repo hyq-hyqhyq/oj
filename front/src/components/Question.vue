@@ -4,50 +4,6 @@
     <div class="create-question-container">
       <h1 class="header-title">题目列表</h1>
       <div class="section-container">
-        <div class="button-bar">
-          <el-button
-            type="primary"
-            @click="randomQuestion"
-            class="random-button"
-          >
-            随机一题
-          </el-button>
-          <el-button
-            type="primary"
-            @click="refreshPage"
-            class="refresh-button"
-          >
-            刷新
-          </el-button>
-        </div>
-        <div class="search-bar">
-          <el-input
-            placeholder="输入标题关键词进行搜索..."
-            v-model="searchQuery"
-            class="search-input"
-            size="medium"
-            clearable
-          />
-          <div class="difficulty-filter">
-            <span class="search-tip">难度</span>
-            <el-select
-              v-model="filterType"
-              placeholder="按难度筛选"
-              size="medium"
-              class="filter-select"
-              @change="filterQuestions"
-            >
-              <el-option label="全部" value="all" />
-              <el-option label="简单" value="1" />
-              <el-option label="中等" value="2" />
-              <el-option label="困难" value="3" />
-              <el-option label="挑战" value="4" />
-              <el-option label="地狱" value="5" />
-            </el-select>
-          </div>
-        </div>
-      </div>
-      <div class="section-container">
         <el-table
           :data="filteredQuestions.slice((currentPage - 1) * pageSize, currentPage * pageSize)"
           style="width: 100%"
@@ -56,24 +12,18 @@
         >
           <el-table-column prop="id" label="ID" width="100" align="center" />
           <el-table-column prop="title" label="标题" align="center" />
-          <el-table-column prop="difficulty" label="难度" width="120" align="center">
-            <template slot-scope="scope">
-              <span :class="getDifficultyClass(scope.row.difficulty)">{{ getDifficultyLabel(scope.row.difficulty) }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column prop="completed" label="是否完成" width="120" align="center">
-            <template slot-scope="scope">
-              <span :class="scope.row.AC ? 'completed-true' : 'completed-false'">{{ scope.row.AC ? '已完成' : '未完成' }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column prop="accuracy" label="通过率" width="120" align="center">
-            <template slot-scope="scope">
-              {{ scope.row.accuracy }}%
-            </template>
-          </el-table-column>
           <el-table-column label="操作" width="150" align="center">
             <template #default="scope">
               <el-button @click="enterQuestion(scope.row.id)" type="success" size="small">进入</el-button>
+              <!-- 删除按钮 -->
+              <el-button
+                v-if="canDeleteQuestions"
+                @click="deleteQuestion(scope.row.id)"
+                type="danger"
+                size="small"
+              >
+                删除
+              </el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -108,23 +58,25 @@ export default {
       filterType: 'all', // 默认显示全部
       randomMode: false,
       randomQuestionId: null,
-      userId: localStorage.getItem('userID'), // Assuming userId is stored in localStorage
-    }
-  },
-  mounted() {
-    this.fetchQuestions();
+      userId: localStorage.getItem('userID'), // 获取 userId
+    };
   },
   computed: {
+    canDeleteQuestions() {
+      return localStorage.getItem('userRole') === '1'; // 判断是否为教师角色
+    },
     filteredQuestions() {
-      if (this.randomMode) {
-        return this.questions.filter(question => question.id === this.randomQuestionId && question.is_public);
-      }
+      // 根据搜索和筛选条件过滤题目
       return this.questions.filter(question => 
         this.filterQuestion(question)
       );
     }
   },
+  mounted() {
+    this.fetchQuestions();
+  },
   methods: {
+    // 获取题目列表
     fetchQuestions() {
       axios.get(`/api/questionlist`, {
         headers: {
@@ -143,6 +95,7 @@ export default {
         alert("获取题目列表失败:", error);
       });
     },
+    // 根据筛选条件过滤题目
     filterQuestion(question) {
       const matchesSearch = question.title.toLowerCase().includes(this.searchQuery.toLowerCase());
       const matchesPublic = question.is_public;
@@ -152,9 +105,36 @@ export default {
         return question.difficulty == this.filterType && matchesSearch && matchesPublic;
       }
     },
+    // 进入题目详情
     enterQuestion(id) {
       this.$router.push({ name: 'answer-question', params: { id: id } });
     },
+    // 删除题目
+    deleteQuestion(questionId) {
+      const userId = localStorage.getItem('userID');  // 获取当前用户的ID
+      if (confirm("确定要删除该题目吗？")) {
+        axios.delete(`/api/questions/${questionId}`, {
+          headers: {
+            'session': localStorage.getItem('session')  // 确保传递 session
+          },
+          params: {
+            user_id: userId  // 传递当前用户ID
+          }
+        })
+        .then(response => {
+          alert("题目已删除！");
+          this.fetchQuestions();  // 刷新题目列表
+        })
+        .catch(error => {
+          const errorMessage = error.response && error.response.data && error.response.data.message
+            ? error.response.data.message
+            : error.message;
+          alert("删除失败！" + errorMessage);
+        });
+      }
+    },
+
+    // 处理分页
     handlePageChange(newPage) {
       this.currentPage = newPage;
     },

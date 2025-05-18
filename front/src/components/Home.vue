@@ -1,41 +1,47 @@
 <template>
-  <div id="app">
-    <div class="background">
-      <img src="@/assets/bk1.png" alt="Background">
-    </div>
+  <div class="video-background">
+    <video
+      autoplay
+      muted
+      loop
+      playsinline
+      src="@/assets/bk_vd.mp4"
+    ></video>
     <div class="overlay">
       <header>
-        <img src="@/assets/logo.png" alt="Logo" class="logo">
-        <div class="title">MYWW OJ 判题系统</div>
+        <div class="title">SQL课程在线测评系统</div>
         <div class="buttons">
           <button @click="toggleForm('login')" class="btn">登录</button>
           <button @click="toggleForm('register')" class="btn">注册</button>
         </div>
       </header>
-      <main>
-        <h1>MYWW OJ</h1>
-        <p class="typewriter">{{ typewriterText }}</p>
-      </main>
+      <img src="@/assets/logo.png" class="logo">
+      <h1>即刻开始SQL之旅</h1>
     </div>
-    <transition name="slide-fade">
+    <transition name="slide-down">
       <div class="login-register" v-if="showForm">
         <form @submit.prevent="handleSubmit" class="form">
-          <button type="button" class="back-btn" @click="showForm = false">&larr;</button>
-          <h2>{{ isLogin ? '用户登录' : '用户注册' }}</h2>
-          <input type="text" v-model="id" placeholder="id" required>
+          <img src="@/assets/logo.png" class="logo2">
+          <button type="button" class="back-btn" @click="showForm = false">返回</button>
+          <input type="text" v-model="id" placeholder="请输入账号" required>
           <div v-if="!isLogin">
-            <input type="text" v-model="username" placeholder="用户名" required>
+            <input type="text" v-model="username" placeholder="请输入姓名" required>
           </div>
-          <input type="password" v-model="password" placeholder="密码" required>
-          <button type="submit" class="submit-btn">{{ isLogin ? '登录' : '注册' }}</button>
-          <div class="switch-form">
-            <button type="button" @click="toggleForm(isLogin ? 'register' : 'login')" class="switch-btn">
-              {{ isLogin ? '没有账号？注册一个' : '已有账号？登录' }}
-            </button>
-          </div>
+          <input type="password" v-model="password" placeholder="请输入密码" required>
+        <el-select v-model="role" placeholder="请选择身份" style="width: 100%; margin-top: 10px;margin-bottom: 15px;">
+          <el-option label="学生" value="student" />
+          <el-option label="助教" value="assistant" />
+          <el-option label="教师" value="teacher" />
+          <el-option label="管理员" value="admin" />
+        </el-select>
+          <div class="btn-group">
+            <button type="submit" class="submit-btn">{{ isLogin ? '登录' : '注册' }}</button>
+            <button type="button" class="switch-btn" @click="toggleForm(isLogin ? 'register' : 'login')" >
+            {{ isLogin ?'没有账号？立即注册' : '已有账号？立即登录' }}</button>
+          </div>        
         </form>
       </div>
-    </transition>
+    </transition>      
   </div>
 </template>
 
@@ -50,32 +56,12 @@ export default {
       id: '',
       username: '',
       password: '',
-      typewriterText: '',
-      fullText: '做最酷的OJ平台！',
+      role: '',
       isTyping: true,
+      show:false,
     };
   },
   methods: {
-    typeWriterEffect() {
-      let i = 0;
-      const speed = 50;
-      const typing = () => {
-        if (i < this.fullText.length && this.isTyping) {
-          this.typewriterText += this.fullText.charAt(i);
-          i++;
-          setTimeout(typing, speed);
-        } else if (i >= this.fullText.length) {
-          setTimeout(() => {
-            this.isTyping = false;
-            this.typewriterText = '';
-            i = 0;
-            this.isTyping = true;
-            typing();
-          }, 3000);
-        }
-      };
-      typing();
-    },
     toggleForm(formType) {
       this.isLogin = formType === 'login';
       this.showForm = true;
@@ -86,6 +72,7 @@ export default {
           const response = await axios.post('/api/login', {
             id: parseInt(this.id),
             password: this.password,
+            role: this.role,
           });
           const userID = this.id;
           const userName = response.data.username;
@@ -102,14 +89,17 @@ export default {
           localStorage.setItem('userName', userName);
 
           if (userRole === 0) {
-            alert(`登录成功！id: ${this.id}\n欢迎来做作业或打比赛！`)
+            alert(`登录成功！id: ${this.id}\n欢迎进入在线测评平台开始刷题之旅！`)
             this.$router.push('/index');
           } else if (userRole === 1) {
-            alert(`登录成功！id: ${this.id}\n老师您辛苦了！`)
-            this.$router.push('/index');
+            alert(`登录成功！id: ${this.id}\n欢迎回来，祝您教学顺利！`)
+            this.$router.push('/teacher');
           } else if (userRole === 2) {
-            alert(`登录成功！id: ${this.id}\n管理员，您好！`)
+            alert(`登录成功！id: ${this.id}\n欢迎进入系统管理后台！`)
             this.$router.push('/admin');
+          } else if (userRole === 3) {
+            alert(`登录成功！id: ${this.id}\n助教您好，欢迎协助管理！`)
+            this.$router.push('/assistant');
           } else {
             alert('用户身份无效，重新注册！');
           }
@@ -122,6 +112,7 @@ export default {
             id: parseInt(this.id),
             username: this.username,
             password: this.password,
+            role: this.role
           });
           alert(response.data.message);
           this.$router.push('/');
@@ -134,14 +125,12 @@ export default {
         }
       }
     }
-  },
-  mounted() {
-    this.typeWriterEffect();
   }
 };
 </script>
 
 <style scoped>
+
 #app {
   font-family: 'Noto Sans', 'Microsoft YaHei UI', 'Source Code Pro', sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -150,15 +139,21 @@ export default {
   color: #2c3e50;
 }
 
-.background img {
-  position: fixed;
+.video-background {
+  position: relative;
+  width: 100%;
+  height: 100vh; /* 视口高度 */
+  overflow: hidden;
+}
+
+.video-background video {
+  position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  filter: blur(0px);
-  z-index: -1;
+  object-fit: cover; 
+  z-index: 0; 
 }
 
 .overlay {
@@ -179,77 +174,41 @@ header {
   justify-content: space-between;
   align-items: center;
   padding: 10px 20px;
-  background-color: rgba(255, 255, 255, 0.8);
-}
-
-.logo {
-  height: 40px;
+  background-color:rgb(7, 12, 113);
 }
 
 .title {
   flex-grow: 1;
-  text-align: center;
+  text-align: left;
   font-size: 24px;
   font-weight: bold;
+  color: #59aeeb;
 }
 
 .buttons {
   display: flex;
-  gap: 20px; /* 调整按钮之间的间距 */
+  gap: 20px; 
 }
 
 .btn {
-  padding: 15px 20px; /* 增加按钮的内边距 */
+  padding: 15px 20px; 
   border: none;
   border-radius: 10px;
-  background-color: #2b8cd1;
+  background-color: #668be3;
   color: white;
   cursor: pointer;
-  font-size: 18px; /* 增加字体大小 */
+  font-size: 18px; 
 }
 
-main {
-  margin-top: 100px; /* 确保内容不会与 header 重叠 */
+.logo {
+  position: relative;
+  width: 350px;
+  height: 300px;
 }
 
-main h1 {
-  font-size: 48px;
-  margin-bottom: 20px;
-  color: white; /* 改变字体颜色 */
-}
-
-main p {
-  font-size: 24px;
-  color: white; /* 改变字体颜色 */
-}
-
-.typewriter {
-  display: inline-block; /* 确保元素是行内块级元素 */
-  overflow: hidden;
-  border-right: .15em solid orange;
-  white-space: nowrap;
-  margin: 0 auto;
-  letter-spacing: .15em;
-  animation: typing 3.5s steps(40, end), blink-caret .75s step-end infinite;
-  font-size: 24px; /* 调整字体大小 */
-  line-height: 1.5; /* 增加行高 */
-}
-
-.subtitle {
-  font-size: 20px;
-  line-height: 1.5;
-  color: white;
-  margin-top: 20px;
-}
-
-@keyframes typing {
-  from { width: 0 }
-  to { width: 100% }
-}
-
-@keyframes blink-caret {
-  from, to { border-color: transparent }
-  50% { border-color: orange; }
+h1 {
+  font-size: 60px;
+  color: #c6d5df;
 }
 
 .login-register {
@@ -258,7 +217,7 @@ main p {
   right: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(255, 255, 255, 0.9);
+  background-color:skyblue;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -269,14 +228,15 @@ main p {
   background: white;
   padding: 20px;
   border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   text-align: center;
-  width: 300px;
+  width: 600px;
   position: relative;
 }
 
-.form h2 {
-  margin-bottom: 20px;
+.form .logo2{
+  position: relative;
+  width: 200px;
+  height: 180px;
 }
 
 .form input {
@@ -285,83 +245,95 @@ main p {
   margin: 10px 0;
   border: 1px solid #ccc;
   border-radius: 5px;
+  display:inline-block;
 }
 
-.form .form-buttons {
+.form .btn-group{
   display: flex;
-  gap: 10px;
+  align-items: center;  
+  gap: 20px;  
 }
 
 .form .submit-btn {
   padding: 10px;
-  width: 100%;
+  width: 48%;
   border: none;
   border-radius: 5px;
-  background-color: #2b8cd1;
+  background-color: skyblue;
   color: white;
   cursor: pointer;
+  margin-top: 10px;
 }
 
 .form .submit-btn:hover {
   background-color: #1a6ca7;
 }
 
-.form .switch-form {
+.form .switch-btn {
+  padding: 10px;
+  width: 48%;
+  border: none;
+  border-radius: 5px;
+  background-color:skyblue;
+  color: white;
+  cursor: pointer;
   margin-top: 10px;
 }
 
-.form .switch-btn {
-  padding: 10px;
-  width: 100%;
-  border: none;
-  border-radius: 5px;
-  background-color: #6c757d;
-  color: white;
-  cursor: pointer;
-}
-
 .form .switch-btn:hover {
-  background-color: #5a6268;
+  background-color: #1a6ca7;
 }
 
 .form .back-btn {
   position: absolute;
-  top: 10px;
-  left: 10px;
-  background-color: #2b8cd1;
+  top: 20px;
+  left: 20px;
+  background-color:skyblue;
   color: white;
   border: none;
-  border-radius: 80%;
-  width: 20px;
-  height: 20px;
+  border-radius: 10%;
+  width: 60px;
+  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
 }
 
-.slide-fade-enter-active, .slide-fade-leave-active {
+.form .back-btn:hover{
+  background-color: #1a6ca7;
+}
+
+/* 定义进入和离开的过渡 */
+.slide-down-enter-active, .slide-down-leave-active {
   transition: all 0.5s ease;
 }
 
-.slide-fade-enter, .slide-fade-leave-to {
-  transform: translateX(100%);
+/* 定义进入前和离开后的状态 */
+.slide-down-enter,
+.slide-down-leave-to {
   opacity: 0;
+  transform: translateY(-100%);
 }
 
-.logout-button {
-  background-color: #ff4d4d;
-  color: #fff;
-  border: none;
-  padding: 10px 20px;
-  margin: 10px 20px;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: transform 0.2s, background-color 0.2s;
+.box {
+  width: 200px;
+  height: 100px;
+  background: #42b983;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
 }
 
-.logout-button:hover {
-  transform: translateY(-2px);
-  background-color: #ff1a1a;
+::v-deep .el-select-dropdown__item.selected {
+  background-color: #2b8cd1 !important;
+  color: white !important;
 }
+
+::v-deep .el-select-dropdown__item:hover {
+  background-color: #2b8cd1 !important;
+  color: white !important;
+}
+
 </style>

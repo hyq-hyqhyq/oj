@@ -8,7 +8,7 @@
       </el-menu>
       <div class="content">
         <h1 class="header-title">提交记录</h1>
-        
+
         <!-- 搜索框和按钮 -->
         <div class="search-bar">
           <el-input
@@ -19,30 +19,30 @@
             clearable
           ></el-input>
         </div>
-        
+
         <!-- 表格展示提交记录 -->
         <el-table :data="filteredSubmissions" style="width: 100%;" border stripe>
-          <el-table-column prop="id" label="提交ID" width="100" align="center"></el-table-column>
-          <el-table-column prop="submit_time" label="提交时间" width="200" align="center">
+          <el-table-column prop="id" label="提交ID" min-width="120" align="center"></el-table-column>
+          <el-table-column prop="submit_time" label="提交时间" min-width="150" align="center">
             <template slot-scope="scope">
               {{ scope.row.submit_time | formatDate }}
             </template>
           </el-table-column>
-          <el-table-column prop="question_id" label="题目ID" width="100" align="center"></el-table-column>
-          <el-table-column v-if="currentTab === '1'" prop="student_id" label="学生ID" width="100" align="center"></el-table-column>
-          <el-table-column v-if="currentTab === '2'" prop="submit_sql" label="提交代码" width="120" align="center">
+          <el-table-column prop="question_id" label="题目ID" min-width="120" align="center"></el-table-column>
+          <el-table-column v-if="currentTab === '1'" prop="student_id" label="学生ID" min-width="120" align="center"></el-table-column>
+          <el-table-column v-if="currentTab === '2'" prop="submit_sql" label="提交代码" min-width="140" align="center">
             <template slot-scope="scope">
               <el-button @click="showCode(scope.row.submit_sql)" type="success" size="small">点击查看</el-button>
             </template>
           </el-table-column>
-          <el-table-column prop="status" label="结果" width="200" align="center">
+          <el-table-column prop="status" label="结果" min-width="150" align="center">
             <template slot-scope="scope">
               <span :style="{ color: getStatusColor(scope.row.status) }">{{ judgeResult(scope.row.status) }}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="pass_rate" label="通过率" width="100" align="center"></el-table-column>
+          <el-table-column prop="pass_rate" label="通过率" min-width="120" align="center"></el-table-column>
         </el-table>
-        
+
         <!-- 弹窗 -->
         <el-dialog :visible.sync="dialogVisible" width="60%" :before-close="handleClose">
           <template slot="title">
@@ -70,10 +70,10 @@ export default {
   data() {
     return {
       submissions: [],
-      searchQuery: '', // 搜索条件：题目ID
+      searchQuery: '',
       dialogVisible: false,
       codeToShow: '',
-      currentTab: '1', // 默认选中第一个标签
+      currentTab: '1'
     };
   },
   mounted() {
@@ -93,7 +93,7 @@ export default {
   },
   methods: {
     handleSelect(index) {
-      this.currentTab = index; // 更新当前选中的索引
+      this.currentTab = index;
       if (index === '1') {
         this.fetchAll();
       } else if (index === '2') {
@@ -152,7 +152,7 @@ export default {
         'orange',
         'purple',
         'blue',
-    ];
+      ];
       return colorMapping[status + 1] || 'black';
     },
     showCode(submitSql) {
@@ -193,7 +193,7 @@ export default {
   background-color: white;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
-  min-width: 800px; /* 确保内容区最小宽度 */
+  min-width: 800px;
 }
 
 .header-title {
@@ -223,20 +223,20 @@ export default {
 }
 
 .el-table {
-  width: 100%; /* 确保表格占据内容区的全部宽度 */
+  width: 100%;
   border-collapse: collapse;
   background-color: white;
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-  table-layout: auto; /* 允许自动调整列宽度 */
+  table-layout: auto;
 }
 
 .el-table th,
 .el-table td {
   padding: 12px 15px;
   text-align: center;
-  white-space: nowrap; /* 防止内容换行，确保列宽自动调整 */
+  white-space: nowrap;
 }
 
 .el-table th {

@@ -9,9 +9,9 @@
     <div class="links-container">
       <router-link
         v-if="canAccessHomePage"
-        :to="{ path: '/index' }"
-        :class="['nav-link', isActive('/index'), { 'activated': isCurrentPath('/index') }]"
-        @click="handleClick('/index')"
+        :to="homePath"
+        :class="['nav-link', isActive(homePath), { 'activated': isCurrentPath(homePath) }]"
+        @click="handleClick(homePath)"
       >主页</router-link>
       <router-link
         v-if="canAccessCreateQuestion"
@@ -24,7 +24,7 @@
         :to="{ path: '/create' }"
         :class="['nav-link', isActive('/create'), { 'activated': isCurrentPath('/create') }]"
         @click="handleClick('/create')"
-      >创建比赛</router-link>
+      >创建考试</router-link>
       <router-link
         v-if="canAccessQuestionList"
         :to="{ path: '/question' }"
@@ -36,7 +36,7 @@
         :to="{ path: '/contest' }"
         :class="['nav-link', isActive('/contest'), { 'activated': isCurrentPath('/contest') }]"
         @click="handleClick('/contest')"
-      >比赛列表</router-link>
+      >考试列表</router-link>
       <router-link
         v-if="canAccessSubmitRecords"
         :to="{ path: '/submit' }"
@@ -48,13 +48,18 @@
         :to="{ path: '/community' }"
         :class="['nav-link', isActive('/community'), { 'activated': isCurrentPath('/community') }]"
         @click="handleClick('/community')"
-      >社群动态</router-link>
+      >学术广场</router-link>
       <router-link
         v-if="canAccessUserManagement"
         :to="{ path: '/admin' }"
         :class="['nav-link', isActive('/admin'), { 'activated': isCurrentPath('/admin') }]"
         @click="handleClick('/admin')"
       >用户管理</router-link>
+      <router-link
+        :to="{ path: '/setting' }"
+        class="nav-link"
+        @click="handleClick('/setting')"
+      >设置</router-link>
     </div>
 
     <button class="logout-button" @click="logout">退出登录</button>
@@ -75,7 +80,7 @@ export default {
   },
   computed: {
     canAccessHomePage() {
-      return this.userRole === 0 || this.userRole === 1 || this.userRole === 2;
+      return [0, 1, 3].includes(this.userRole);
     },
     canAccessCreateQuestion() {
       return this.userRole === 1 || this.userRole === 2;
@@ -84,19 +89,30 @@ export default {
       return this.userRole === 1 || this.userRole === 2;
     },
     canAccessQuestionList() {
-      return this.userRole === 0 || this.userRole === 1 || this.userRole === 2;
+      return [0, 1, 2, 3].includes(this.userRole);
     },
     canAccessContestList() {
-      return this.userRole === 0 || this.userRole === 1 || this.userRole === 2;
+      return [0, 1, 2, 3].includes(this.userRole);
     },
     canAccessSubmitRecords() {
-      return this.userRole === 0 || this.userRole === 1 || this.userRole === 2;
+      return [0, 1, 2, 3].includes(this.userRole);
     },
     canAccessCommunity() {
-      return this.userRole === 0 || this.userRole === 1 || this.userRole === 2;
+      return [0, 1, 2, 3].includes(this.userRole);
     },
     canAccessUserManagement() {
       return this.userRole === 2;
+    },
+    canDeleteQuestions() {
+      return this.userRole === 1;
+    },
+    homePath: function () {
+      switch (this.userRole) {
+        case 0: return '/index';
+        case 1: return '/teacher';
+        case 3: return '/assistant';
+        default: return '/';
+      }
     }
   },
   methods: {
@@ -134,6 +150,7 @@ export default {
     this.currentPath = this.$route.path;
   }
 };
+
 </script>
 
 <style scoped>

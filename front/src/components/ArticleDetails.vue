@@ -1,17 +1,7 @@
 <template>
-  <div :class="theme">
+  <div>
     <Navbar />
     <div class="article-detail-page">
-      <div class="controls">
-        <label for="theme-selector">选择主题颜色:</label>
-        <select id="theme-selector" v-model="selectedTheme" @change="updateTheme">
-          <option value="default">默认</option>
-          <option value="black">黑色</option>
-          <option value="white">白色</option>
-          <option value="morandi">莫兰迪色</option>
-          <option value="blue-black">蓝黑色系</option>
-        </select>
-      </div>
       <div class="article-container shadow">
         <h1 class="article-title">{{ article.title }}</h1>
         <div class="article-metadata">
@@ -42,8 +32,7 @@ export default {
         content: '',
         user_id: '',
         publish_time: ''
-      },
-      selectedTheme: 'default' // 默认主题
+      }
     };
   },
   mounted() {
@@ -69,26 +58,14 @@ export default {
     },
     formatDate(date) {
       return new Date(date).toLocaleString();
-    },
-    updateTheme() {
-      this.theme = this.selectedTheme;
     }
   },
   computed: {
-    theme() {
-      return {
-        default: 'theme-default',
-        black: 'theme-black',
-        white: 'theme-white',
-        morandi: 'theme-morandi',
-        'blue-black': 'theme-blue-black'
-      }[this.selectedTheme];
-    },
     parsedContent() {
       return marked(this.article.content);
     }
   }
-}
+};
 </script>
 
 <style scoped>
@@ -98,49 +75,12 @@ body {
   font-family: 'Roboto', sans-serif;
 }
 
-.theme-default {
-  background-color: #f7f7f7;
-}
-
-.theme-black {
-  background-color: #000;
-  color: #fff;
-}
-
-.theme-white {
-  background-color: #fff;
-  color: #000;
-}
-
-.theme-morandi {
-  background-color: #d8c8c8;
-  color: #383838;
-}
-
-.theme-blue-black {
-  background-color: #1e1e2e;
-  color: #b0c4de;
-}
-
 .article-detail-page {
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 20px;
   min-height: 100vh;
-}
-
-.controls {
-  margin-bottom: 20px;
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
-#theme-selector {
-  padding: 5px;
-  border-radius: 3px;
-  border: 1px solid #ccc;
 }
 
 .article-container {
@@ -154,26 +94,6 @@ body {
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.theme-black .article-container {
-  background-color: #333;
-  color: #fff;
-}
-
-.theme-white .article-container {
-  background-color: #f9f9f9;
-  color: #333;
-}
-
-.theme-morandi .article-container {
-  background-color: #f2ede3;
-  color: #383838;
-}
-
-.theme-blue-black .article-container {
-  background-color: #26263a;
-  color: #b0c4de;
-}
-
 .article-container:hover {
   transform: translateY(-3px);
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
@@ -184,8 +104,8 @@ body {
   color: inherit;
   font-size: 2.4rem;
   text-align: center;
-  word-break: break-word; /* 关键词很长时可以换行 */
-  line-height: 1.2; /* 行高设置，让换行时有足够空间 */
+  word-break: break-word;
+  line-height: 1.2;
 }
 
 .article-metadata {
@@ -203,12 +123,6 @@ body {
   border-radius: 5px;
 }
 
-.theme-black .author, .theme-black .publish-time,
-.theme-blue-black .author, .theme-blue-black .publish-time {
-  background-color: #444;
-  color: #b0c4de;
-}
-
 .article-content {
   font-size: 1.1rem;
   line-height: 1.8;
@@ -220,7 +134,6 @@ body {
   margin-bottom: 20px;
 }
 
-/* Markdown 内容的样式 */
 .article-content h1,
 .article-content h2,
 .article-content h3,
@@ -229,7 +142,7 @@ body {
 .article-content h6 {
   margin-top: 20px;
   margin-bottom: 10px;
-  font-weight: 500;
+  font-weight: 400;
 }
 
 .article-content ul,

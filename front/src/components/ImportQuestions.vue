@@ -116,36 +116,74 @@ export default {
       this.testCases.splice(index, 1);
     },
     createQuestionWithTestCases() {
-      axios.post(`/api/question`, { ...this.newQuestion },
-        { headers: { 'session': localStorage.getItem('session'), 'Content-Type': 'application/json' } })
-        .then(response => {
-          const questionId = response.data.question_id;
-          const testCases = this.testCases.map(testCase => ({
-            ...testCase,
-            tablename: this.newQuestion.tablename,
-            question_id: questionId
-          }));
-          return axios.post(`/api/testcase`, { test_cases: testCases, question_id: questionId },
-            { headers: { 'session': localStorage.getItem('session'), 'Content-Type': 'application/json' } });
-        })
-        .then(response => {
-          // 清空输入框
-          this.newQuestion = {
-            title: '',
-            create_code: '',
-            description: '',
-            input_example: '',
-            output_example: '',
-            difficulty: '1',
-            answer_example: '',
-            is_public: true
-          };
-          this.testCases = [{ input_sql: '', output: '' }];
-          alert(`成功: ${response.data.message}`);
-        })
-        .catch(error => {
-          alert(`失败: ${error.response.data.message}`);
-        });
+      // ① 从 localStorage 拿到当前登录教师的 ID 和 session
+      const teacherId = parseInt(localStorage.getItem('userID'));
+      const session   = localStorage.getItem('session');
+
+      // ② 构造带 teacher_id 的题目主体
+      const questionPayload = {
+        ...this.newQuestion,
+        teacher_id: teacherId
+      };
+
+      // ③ 先创建题目
+      axios.post(
+        '/api/question',
+        questionPayload,
+        {
+          headers: {
+            'session':       session,
+            'Content-Type': 'application/json'
+          }
+        }
+      )
+      .then(response => {
+        const questionId = response.data.question_id;
+
+        // ④ 构建测试点数组，并注入表名和 question_id
+        const testCases = this.testCases.map(testCase => ({
+          ...testCase,
+          tablename:   this.newQuestion.tablename,
+          question_id: questionId
+        }));
+
+        // ⑤ 提交测试点
+        return axios.post(
+          '/api/testcase',
+          {
+            test_cases:   testCases,
+            question_id:  questionId
+          },
+          {
+            headers: {
+              'session':       session,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+      })
+      .then(response => {
+        // ⑥ 全部成功后清空表单
+        this.newQuestion = {
+          title:          '',
+          create_code:    '',
+          description:    '',
+          input_example:  '',
+          output_example: '',
+          difficulty:     '1',
+          answer_example: '',
+          is_public:      true,
+          tablename:      ''
+        };
+        this.testCases = [{ input_sql: '', output: '' }];
+
+        alert(`成功: ${response.data.message}`);
+      })
+      .catch(error => {
+        // ⑦ 兼容写法捕获错误信息
+        const errMsg = (error.response && error.response.data && error.response.data.message) || '未知错误';
+        alert(`失败: ${errMsg}`);
+      });
     }
   }
 };

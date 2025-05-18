@@ -3,7 +3,7 @@
     <Navbar />
     <div class="community-page">
       <div class="page-header">
-        <h1>社群分享</h1>
+        <h1>学术广场</h1>
       </div>
       <div class="controls">
         <input type="text" v-model="searchKeyword" class="form-control search-field" placeholder="搜索文章...">
@@ -138,7 +138,7 @@ h1 {
 .btn-create {
   padding: 10px 20px;
   font-size: 1.1rem;
-  background-color: #28a745;
+  background-color: #2b8cd1;
   color: white;
   border: none;
   border-radius: 5px;
@@ -147,7 +147,7 @@ h1 {
 }
 
 .btn-create:hover {
-  background-color: #218838;
+  background-color:#2b8cd1;
 }
 
 .article-list {

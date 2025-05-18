@@ -73,7 +73,7 @@ export default {
     return {
       name: localStorage.getItem('userName'),
       role: localStorage.getItem('userRole'),
-      roleMap: { '0': '学生', '1': '老师', '2': '管理员' },
+      roleMap: { '0': '学生', '1': '老师', '2': '管理员', '3': '助教' },
       totalQuestions: 0,
       numberAnswered: 0,
       pass_count: 0,
@@ -130,8 +130,17 @@ export default {
           this.totalQuestions = response.data.length;
         })
         .catch(error => {
-          alert("获取题目列表失败: " + error);
+          console.error("详细错误信息:", error);
+          if (error.response) {
+            console.log("服务器有响应", error.response.data);
+          } else if (error.request) {
+            console.log("请求发出但无响应", error.request);
+          } else {
+            console.log("请求配置错误", error.message);
+          }
+          alert("获取题目列表失败: " + error.message);
         });
+
 
       axios.get('/api/submitlist', {
         headers: {

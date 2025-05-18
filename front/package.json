@@ -12,7 +12,7 @@
     "chart.js": "2.9.4",
     "core-js": "^2.6.5",
     "echarts": "^4.2.1",
-    "element-ui": "^2.8.2",
+    "element-ui": "^2.15.14",
     "highlight.js": "^11.9.0",
     "marked": "^0.3.19",
     "moment-timezone": "^0.5.45",

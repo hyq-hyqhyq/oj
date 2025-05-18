@@ -102,12 +102,12 @@ export default {
         this.contestQuestions = response.data.questionIds;
         this.fetchQuestions();
         if (this.contestQuestions.length === 0) {
-          alert("该竞赛没有题目");
+          alert("该考试没有题目");
           this.$router.push({ name: 'contest-list' });
         }
       })
       .catch(error => {
-        alert("获取竞赛题目列表失败: " + error.response.data.message);
+        alert("获取考试题目列表失败: " + error.response.data.message);
       });
     },
     fetchQuestions() {
