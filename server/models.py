@@ -11,7 +11,7 @@ class User(db.Model):
     role = Column(INTEGER, nullable=False)
     session = Column(VARCHAR(255), nullable=True)
     __table_args__ = (
-        CheckConstraint('role IN (0, 1, 2)', name='check_role'),
+        CheckConstraint('role IN (0, 1, 2, 3)', name='check_role'),
     )
 
 # 题目表
@@ -26,6 +26,9 @@ class Question(db.Model):
     difficulty = Column(INTEGER, nullable=False)
     answer_example = Column(TEXT, nullable=False)
     is_public = Column(BOOLEAN, nullable=False, default=True)
+    teacher_id = Column(INTEGER, ForeignKey('User.id'), nullable=False)
+    teacher = db.relationship('User', backref='questions')
+
 
 # 考试表
 class Exam(db.Model):
@@ -63,6 +66,17 @@ class ExamStudent(db.Model):
     __table_args__ = (
         CheckConstraint('score >= 0', name='check_score_non_negative'),
     )
+
+# 考试-助教-学生对应表
+class ExamAssistantStudent(db.Model):
+    __tablename__ = 'Exam_Assistant_Student'
+    exam_id = Column(INTEGER, ForeignKey('Exam.id'), primary_key=True)
+    assistant_id = Column(INTEGER, ForeignKey('User.id'), primary_key=True)
+    student_id = Column(INTEGER, ForeignKey('User.id'), primary_key=True)
+
+    exam = db.relationship('Exam', backref='assistant_students')
+    assistant = db.relationship('User', foreign_keys=[assistant_id], backref='assigned_students')
+    student = db.relationship('User', foreign_keys=[student_id], backref='assigned_assistants')
 
 # 测试用例表
 class TestCase(db.Model):

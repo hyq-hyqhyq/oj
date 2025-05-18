@@ -8,6 +8,7 @@ from sqlalchemy.exc import SQLAlchemyError, TimeoutError, OperationalError
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import func
 from datetime import datetime
+
 def parse_iso_datetime(iso_str):
     dt = datetime.fromisoformat(iso_str.replace('Z', '+00:00'))
     return dt
@@ -62,9 +63,6 @@ class AnsweredQuestions(Resource):
         my_submits = models.Submission.query.filter_by(student_id=student_id).with_entities(models.Submission.question_id).distinct().all()
         unique_questions = {submit.question_id for submit in my_submits}
         return jsonify(list(unique_questions))
-
-
-
 
 
 class CheckQuestions(Resource):
@@ -237,20 +235,26 @@ class Contest(Resource):
 class ContestList(Resource):
     @auth_role(AUTH_ALL)
     def get(self):
-        # 获取当前用户ID
-        current_user_id = request.args.get('user_id')
-        current_user_role = request.args.get('user_role')
+        # 获取当前用户ID和角色
+        current_user_id = int(request.args.get('user_id'))
+        current_user_role = int(request.args.get('user_role'))
 
-        if int(current_user_role) == 0:
-            # 查询与当前用户相关的考试ID
+        if current_user_role == AUTH_STUDENT:
+            # ✅ 学生：获取该学生参与的考试
             student_exams = models.ExamStudent.query.filter_by(student_id=current_user_id).all()
             exam_ids = [exam.exam_id for exam in student_exams]
-
-            # 查询相关考试信息
             contests = models.Exam.query.filter(models.Exam.id.in_(exam_ids)).all()
+
+        elif current_user_role == AUTH_ASSISTANT:
+            # ✅ 助教：获取其被分配负责的学生考试
+            assistant_links = models.ExamAssistantStudent.query.filter_by(assistant_id=current_user_id).all()
+            exam_ids = {link.exam_id for link in assistant_links}
+            contests = models.Exam.query.filter(models.Exam.id.in_(exam_ids)).all()
+
         else:
-            # 查询所有考试信息
+            # ✅ 教师 / 管理员：返回所有考试
             contests = models.Exam.query.all()
+
         data = [model_to_dict(contest) for contest in contests]
         return jsonify(data)
 
@@ -316,6 +320,28 @@ class ContestStudent(Resource):
         
         exam_ids = [exam_student.exam_id for exam_student in exam_students]
         return {"exam_ids": exam_ids}, HTTP_OK
+
+
+class ExamAssistantStudentList(Resource):
+    @auth_role(AUTH_TEACHER)
+    def post(self):
+        data = request.get_json()
+        exam_id = data.get('exam_id')
+        assistant_id = data.get('assistant_id')
+        student_ids = data.get('student_ids', [])
+
+        if not (exam_id and assistant_id and student_ids):
+            return {"message": "信息不全"}, HTTP_BAD_REQUEST
+
+        for sid in student_ids:
+            link = models.ExamAssistantStudent(
+                exam_id=exam_id,
+                assistant_id=assistant_id,
+                student_id=sid
+            )
+            db.session.add(link)
+        db.session.commit()
+        return {"message": "分配成功"}, HTTP_CREATED
 
 
 class ContestScores(Resource):
@@ -519,20 +545,48 @@ class Login(Resource):
         data = request.get_json()
         user_id = data.get('id')
         password = data.get('password')
+        role_str = data.get('role')
         
-        if not user_id or not password:
-            return {"message": "缺少用户名或密码"}, HTTP_BAD_REQUEST
+        if not user_id or not password  or not role_str:
+            return {"message": "缺少用户名，密码或身份"}, HTTP_BAD_REQUEST
 
-        user_id = int(user_id)
-        user = models.User.query.filter_by(id=user_id, password=hashlib.sha256(password.encode('utf8')).hexdigest()).first()
+        role_map = {
+            "student": 0,
+            "teacher": 1,
+            "admin": 2,
+            "assistant": 3
+        }
 
-        if user:
-            session_token = hashlib.sha1(os.urandom(24)).hexdigest()
-            user.session = session_token
-            db.session.commit()
-            return model_to_dict(user), HTTP_OK
-        else:
-            return {"message": '用户名或密码无效'}, HTTP_UNAUTHORIZED
+        if role_str not in role_map:
+            return {"message": "非法身份信息"}, HTTP_BAD_REQUEST
+
+        role = role_map[role_str]
+
+        try:
+            user_id = int(user_id)
+        except ValueError:
+            return {"message": "用户ID须为整数"}, HTTP_BAD_REQUEST
+
+        # 查询用户
+        user = models.User.query.filter_by(id=user_id).first()
+        if not user:
+            return {"message": "用户名或密码无效"}, HTTP_UNAUTHORIZED
+
+        # 校验密码
+        hashed = hashlib.sha256(password.encode('utf8')).hexdigest()
+        if user.password != hashed:
+            return {"message": "用户名或密码无效"}, HTTP_UNAUTHORIZED
+
+        # 校验身份
+        if user.role != role:
+            return {"message": "用户身份不匹配，请重新选择！"}, HTTP_UNAUTHORIZED
+
+        # 生成并保存 session token
+        session_token = hashlib.sha1(os.urandom(24)).hexdigest()
+        user.session = session_token
+        db.session.commit()
+
+        return model_to_dict(user), HTTP_OK
         
     def delete(self):
         session = request.headers.get('session')
@@ -651,16 +705,26 @@ class Question(Resource):
         else:
             return {"message": "该题目不存在"}, HTTP_NOT_FOUND
 
-    @auth_role(AUTH_TEACHER)
-    def delete(self):
-        question_id = int(request.args.get('question_id'))
-        ret = models.Question.query.filter_by(id=question_id).first()
-        if ret:
-            db.session.delete(ret)
+    def handle_options_and_delete(question_id):
+        if request.method == 'OPTIONS':
+            return '', 200  # 返回空响应并且允许跨域访问
+
+        # 如果是 DELETE 请求，执行删除操作
+        user_id = request.args.get('user_id')
+        question = models.Question.query.get(question_id)
+        if not question:
+            return {"message": "该题目不存在"}, 404
+        if question.teacher_id != int(user_id):
+            return {"message": "无权删除他人发布的题目"}, 403
+
+        try:
+            db.session.delete(question)
             db.session.commit()
-            return {}, HTTP_OK
-        else:
-            return {"message": "该题目不存在"}, HTTP_NOT_FOUND
+            return {}, 200  # 删除成功
+        except Exception as e:
+            db.session.rollback()
+            return {"message": "删除失败", "error": str(e)}, 500
+   
     
     @auth_role(AUTH_TEACHER)
     def post(self):
@@ -673,6 +737,7 @@ class Question(Resource):
         q.output_example = request.json.get('output_example', '')
         q.answer_example = request.json.get('answer_example', '')
         q.is_public = request.json.get('is_public', False)
+        q.teacher_id = int(request.json.get('teacher_id'))
 
         if not (q.title and q.description and q.create_code):
             return {"message": "题目信息不全，补全缺失项！"}, HTTP_BAD_REQUEST
@@ -698,7 +763,7 @@ class TestCase(Resource):
             db.session.add(tc)
 
         db.session.commit()
-        return {"message": "新增测试点成功"}, HTTP_CREATED
+        return {"message": "新增题目成功"}, HTTP_CREATED
 
 # 处理题目列表的相关功能
 class QuestionList(Resource):
@@ -731,17 +796,38 @@ class Register(Resource):
     def post(self):
         id = int(request.json.get('id')) if request.json.get('id') else None
         username = request.json.get('username', None)
-        password = hashlib.sha256(request.json.get('password', 0).encode('utf8')).hexdigest() 
-        
+        password = hashlib.sha256(request.json.get('password', 0).encode('utf8')).hexdigest()  
+        role_str = request.json.get('role', 'student')
+        ROLE_MAP = {
+            "student": AUTH_STUDENT,
+            "teacher": AUTH_TEACHER,
+            "assistant": AUTH_ASSISTANT,
+            "admin": AUTH_ADMIN
+        }
+        role = ROLE_MAP.get(role_str)
+
+        if role is None:
+            return {"message": "无效的用户身份类型"}, HTTP_BAD_REQUEST
+
         if models.User.query.filter_by(id=id).first():
-            return {"message": "ID撞车了，换一个。"}, HTTP_CONFLICT
+            return {"message": "用户编号已被占用，请更换后重试。"}, HTTP_CONFLICT
         if models.User.query.filter_by(username=username).first():
-            return {"message": "有人跟你重名了，换一个。"}, HTTP_CONFLICT
-        
-        new_user = models.User(id=id, username=username, password=password, role=AUTH_STUDENT)
+            return {"message": "该用户名已被注册，请选择其他用户名。"}, HTTP_CONFLICT
+
+        new_user = models.User(id=id, username=username, password=password, role=role)
         db.session.add(new_user)
         db.session.commit()
-        return {"message": "成了，快去登录吧！"}, HTTP_CREATED
+
+        # 根据身份返回不同提示
+        if role == AUTH_TEACHER:
+            msg = "注册成功，欢迎加入 SQL 在线测评平台（教师端）。"
+        elif role == AUTH_ASSISTANT:
+            msg = "注册成功，欢迎使用 SQL 在线测评平台（助教权限已开启）。"
+        else:
+            msg = "注册成功，欢迎进入 SQL 在线测评平台，开始你的学习之旅！"
+
+        return {"message": msg}, HTTP_CREATED
+
 
 # students
 class Student(Resource):
@@ -792,6 +878,39 @@ class StudentList(Resource):
         return jsonify(data)
 
 
+# setting
+class UpdateSettings(Resource):
+    def post(self):
+        # 从请求中获取数据
+        data = request.get_json()
+        user_id = data.get('id')  # 用户的唯一标识符
+        new_username = data.get('username')
+        new_password = data.get('password')
+
+        if not user_id:
+            return jsonify({"message": "用户ID不能为空"}), 400
+        
+        # 查询用户是否存在
+        user = models.User.query.filter_by(id=user_id).first()
+        if not user:
+            return jsonify({"message": "用户不存在"}), 404
+
+        # 如果提供了新的用户名，检查用户名是否已经存在
+        if new_username:
+            existing_user = models.User.query.filter_by(username=new_username).first()
+            if existing_user:
+                return jsonify({"message": "该用户名已被注册，请选择其他用户名"}), 409
+            user.username = new_username  # 更新用户名
+
+        # 如果提供了新的密码，进行密码加密后更新
+        if new_password:
+            hashed_password = hashlib.sha256(new_password.encode('utf8')).hexdigest()
+            user.password = hashed_password  # 更新密码
+
+        # 提交数据库更改
+        db.session.commit()
+
+        return jsonify({"message": "设置已成功更新", "username": user.username, "password": new_password}), 200
 
 
 # submit

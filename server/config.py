@@ -8,7 +8,7 @@ HTTP_PARTIAL_CONTENT = 206  # 部分内容。服务器成功处理了部分GET�
 HTTP_NO_CONTENT = 204
 
 # 400
-HTTP_BAD_REQUEST = 418  # 客户端请求的语法错误，服务器无法理解
+HTTP_BAD_REQUEST = 400  # 客户端请求的语法错误，服务器无法理解
 HTTP_UNAUTHORIZED = 401 # 请求要求用户的身份认证
 HTTP_FORBIDDEN = 403    # 服务器理解请求客户端的请求，但是拒绝执行此请求
 HTTP_NOT_FOUND = 404     # 没找到
@@ -22,7 +22,9 @@ DEBUG = True
 AUTH_STUDENT = 0
 AUTH_TEACHER = 1
 AUTH_ADMIN = 2
-AUTH_ALL = 3
+AUTH_ASSISTANT = 3
+AUTH_ALL = 4
+
 
 JUDGE_PENDING = -1
 JUDGE_ACCEPTED = 0

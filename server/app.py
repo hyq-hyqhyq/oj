@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_restful import Api
 from flask_cors import CORS
-import os,sys
+import os, sys
 sys.path.append(os.getcwd())
 import config
 from resources import *
@@ -10,15 +10,14 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(config)
     config.db.init_app(app)
-    CORS(app, resources={r"/api/*": {"origins": "*"}})
+    CORS(app, resources={r"/api/*": {"origins": "*", "methods": ["GET", "POST", "DELETE", "OPTIONS"], "supports_credentials": True}})
     
     api = Api(app)
     
     @app.route('/')
     def h():
         return ''
-
-    # 注册资源API
+    
     api.add_resource(Answer, '/api/answer')
     api.add_resource(AnsweredQuestions, '/api/answeredquestions')
     api.add_resource(Community, '/api/community')
@@ -44,10 +43,13 @@ def create_app():
     api.add_resource(ContestScores, '/api/contestscores')
     api.add_resource(CheckQuestions, '/api/check-questions')
     api.add_resource(CheckStudents, '/api/check-students')
+    api.add_resource(UpdateSettings, '/api/updatesettings')
 
     with app.app_context():
         config.db.create_all()
     return app
+
 app = create_app()
+
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)

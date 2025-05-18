@@ -6,7 +6,7 @@ create table User (
     id bigint primary key,
     username varchar(50) not null unique,
     password varchar(255) not null,
-    role int not null check (role in (0, 1, 2)),
+    role int not null check (role in (0, 1, 2, 3)),
     session varchar(255)
 );
 
@@ -20,6 +20,8 @@ create table Question (
     output_example text not null,
     difficulty int not null,
     answer_example text not null,
+    teacher_id bigint not null,
+    foreign key (teacher_id) references User(id),
     is_public boolean not null default true
 );
 
@@ -52,6 +54,18 @@ create table Exam_Student (
     foreign key (exam_id) references Exam(id),
     foreign key (student_id) references User(id)
 );
+
+-- 考试-助教-学生对应表 (Exam_Assistant_Student)
+CREATE TABLE Exam_Assistant_Student (
+    exam_id INT,
+    assistant_id BIGINT,
+    student_id BIGINT,
+    PRIMARY KEY (exam_id, assistant_id, student_id),
+    FOREIGN KEY (exam_id) REFERENCES Exam(id),
+    FOREIGN KEY (assistant_id) REFERENCES User(id),
+    FOREIGN KEY (student_id) REFERENCES User(id)
+);
+
 
 -- 测试用例表 (TestCase)
 create table TestCase (
