@@ -40,6 +40,12 @@
               >
                 开始考试
               </button>
+              <button 
+                @click="deleteContest(contest.id)" 
+                style="margin-left: 8px; background-color: #d9534f;"
+              >
+                删除考试
+              </button>
             </td>
             <td v-if="userRole !== 0">
               <button @click="viewScores(contest.id)">查看答题</button>
@@ -96,6 +102,20 @@ export default {
       .catch(error => {
         alert("获取考试列表时发生错误！", error);
       });
+    },
+    deleteContest(contestId) {
+      if (confirm("确定要删除该考试吗？")) {
+        axios.delete(`/api/contest/${contestId}`, {
+          headers: { 'session': localStorage.getItem('session') }
+        })
+        .then(() => {
+          alert("考试已删除！");
+          this.fetchContests();
+        })
+        .catch(error => {
+          alert("删除失败！" + ((error.response && error.response.data && error.response.data.message) ? error.response.data.message : error.message));
+        });
+      }
     },
     getContestStatus(startTime, endTime) {
       const now = new Date();

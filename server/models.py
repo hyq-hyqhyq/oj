@@ -48,7 +48,7 @@ class ExamQuestion(db.Model):
     exam_id = Column(INTEGER, ForeignKey('Exam.id'), primary_key=True)
     question_id = Column(INTEGER, ForeignKey('Question.id'), primary_key=True)
     score = Column(INTEGER, nullable=False, default=10)
-    exam = db.relationship('Exam', backref='exam_questions')
+    exam = db.relationship('Exam', backref='exam_questions', passive_deletes=True)
     question = db.relationship('Question', backref='exam_questions')
     __table_args__ = (
         CheckConstraint('score > 0', name='check_score_positive'),
@@ -61,7 +61,7 @@ class ExamStudent(db.Model):
     exam_id = Column(INTEGER, ForeignKey('Exam.id'), primary_key=True)
     student_id = Column(INTEGER, ForeignKey('User.id'), primary_key=True)
     score = Column(INTEGER, nullable=False, default=0)
-    exam = db.relationship('Exam', backref='exam_students')
+    exam = db.relationship('Exam', backref='exam_students', passive_deletes=True)
     student = db.relationship('User', backref='exam_students')
     __table_args__ = (
         CheckConstraint('score >= 0', name='check_score_non_negative'),
@@ -74,7 +74,7 @@ class ExamAssistantStudent(db.Model):
     assistant_id = Column(INTEGER, ForeignKey('User.id'), primary_key=True)
     student_id = Column(INTEGER, ForeignKey('User.id'), primary_key=True)
 
-    exam = db.relationship('Exam', backref='assistant_students')
+    exam = db.relationship('Exam', backref='assistant_students', passive_deletes=True)
     assistant = db.relationship('User', foreign_keys=[assistant_id], backref='assigned_students')
     student = db.relationship('User', foreign_keys=[student_id], backref='assigned_assistants')
 

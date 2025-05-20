@@ -209,15 +209,23 @@ class Contest(Resource):
             return {"message": "该考试不存在"}, HTTP_NOT_FOUND
 
     @auth_role(AUTH_TEACHER)
-    def delete(self):
-        contest_id = int(request.args.get('contest_id'))
-        ret = models.Exam.query.filter_by(id=contest_id).first()
-        if ret:
-            db.session.delete(ret)
-            db.session.commit()
-            return {}, HTTP_OK
-        else:
+    def delete(self, contest_id):
+        if request.method == 'OPTIONS':
+            return '', 200
+        exam = models.Exam.query.filter_by(id=contest_id).first()
+        if not exam:
             return {"message": "该考试不存在"}, HTTP_NOT_FOUND
+
+        # 先删除 ExamQuestion 等依赖表记录
+        models.ExamQuestion.query.filter_by(exam_id=contest_id).delete()
+        models.ExamStudent.query.filter_by(exam_id=contest_id).delete()
+        models.ExamAssistantStudent.query.filter_by(exam_id=contest_id).delete()
+        models.Submission.query.filter_by(exam_id=contest_id).delete()
+
+    # 然后删除考试本身
+        db.session.delete(exam)
+        db.session.commit()
+        return {}, HTTP_OK
     
     @auth_role(AUTH_TEACHER)
     def post(self):
@@ -705,7 +713,7 @@ class Question(Resource):
         else:
             return {"message": "该题目不存在"}, HTTP_NOT_FOUND
 
-    def handle_options_and_delete(question_id):
+    def delete(self, question_id):
         if request.method == 'OPTIONS':
             return '', 200  # 返回空响应并且允许跨域访问
 

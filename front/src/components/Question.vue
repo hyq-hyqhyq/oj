@@ -113,7 +113,7 @@ export default {
     deleteQuestion(questionId) {
       const userId = localStorage.getItem('userID');  // 获取当前用户的ID
       if (confirm("确定要删除该题目吗？")) {
-        axios.delete(`/api/questions/${questionId}`, {
+        axios.delete(`/api/question/${questionId}`, {
           headers: {
             'session': localStorage.getItem('session')  // 确保传递 session
           },

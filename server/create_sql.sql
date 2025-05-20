@@ -1,4 +1,4 @@
-create database oj;
+#create database oj;
 use oj;
 
 -- 用户表 (User)
@@ -41,8 +41,8 @@ create table Exam_Question (
     question_id int,
     score int not null default 10 check (score > 0),
     primary key (exam_id, question_id),
-    foreign key (exam_id) references Exam(id),
-    foreign key (question_id) references Question(id)
+    foreign key (exam_id) references Exam(id) on delete cascade,
+    foreign key (question_id) references Question(id) on delete cascade
 );
 
 -- 考试-学生表 (Exam_Student)
@@ -51,7 +51,7 @@ create table Exam_Student (
     student_id bigint,
     score int not null default 0 check (score >= 0),
     primary key (exam_id, student_id),
-    foreign key (exam_id) references Exam(id),
+    foreign key (exam_id) references Exam(id) on delete cascade,
     foreign key (student_id) references User(id)
 );
 
@@ -61,7 +61,7 @@ CREATE TABLE Exam_Assistant_Student (
     assistant_id BIGINT,
     student_id BIGINT,
     PRIMARY KEY (exam_id, assistant_id, student_id),
-    FOREIGN KEY (exam_id) REFERENCES Exam(id),
+    FOREIGN KEY (exam_id) REFERENCES Exam(id) on delete cascade,
     FOREIGN KEY (assistant_id) REFERENCES User(id),
     FOREIGN KEY (student_id) REFERENCES User(id)
 );
