@@ -480,6 +480,7 @@ class Judge(Resource):
             session.rollback()  # 回滚事务
         finally:
             session.close()  # 关闭会话
+            
     def create_database(self, database_name):
         # 创建数据库引擎，连接到MySQL服务器
         engine = create_engine(ip_address)
