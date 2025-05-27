@@ -109,13 +109,13 @@ export default {
     this.updateTime();
     this.getDailyQuote();
     setInterval(this.updateTime, 1000); // 每秒更新时间
-    axios.get('/api/myassistant', {
-    headers: { session: localStorage.getItem('session') },
-      params: { student_id: localStorage.getItem('userID') }
+    axios.get('/api/studentlist', {
+      headers: { session: localStorage.getItem('session') }
     }).then(res => {
-      this.assistantName = res.data.name || '暂未分配';
-    }).catch(e => {
-      console.error("获取助教信息失败", e);
+      const me = res.data.find(s => s.id == localStorage.getItem('userID'));
+      this.assistantName = me && me.assistant_name ? me.assistant_name : '暂未分配';
+    }).catch(err => {
+      console.error("获取学生信息失败", err);
     });
   },
   watch: {

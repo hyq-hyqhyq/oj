@@ -44,22 +44,11 @@
         @click="handleClick('/submit')"
       >提交记录</router-link>
       <router-link
-        v-if="canAccessCommunity"
-        :to="{ path: '/community' }"
-        :class="['nav-link', isActive('/community'), { 'activated': isCurrentPath('/community') }]"
-        @click="handleClick('/community')"
-      >学术广场</router-link>
-      <router-link
         v-if="canAccessUserManagement"
         :to="{ path: '/admin' }"
         :class="['nav-link', isActive('/admin'), { 'activated': isCurrentPath('/admin') }]"
         @click="handleClick('/admin')"
       >用户管理</router-link>
-      <router-link
-        :to="{ path: '/setting' }"
-        class="nav-link"
-        @click="handleClick('/setting')"
-      >设置</router-link>
       <!-- ✅ 新增：学生管理，仅教师可见 -->
       <router-link
         v-if="canAccessStudentManage"
@@ -67,6 +56,11 @@
         :class="['nav-link', isActive('/studentmanage'), { 'activated': isCurrentPath('/studentmanage') }]"
         @click="handleClick('/studentmanage')"
       >学生管理</router-link>
+      <router-link
+        :to="{ path: '/setting' }"
+        class="nav-link"
+        @click="handleClick('/setting')"
+      >设置</router-link>
 
     </div>
 
@@ -103,9 +97,6 @@ export default {
       return [0, 1, 2, 3].includes(this.userRole);
     },
     canAccessSubmitRecords() {
-      return [0, 1, 2, 3].includes(this.userRole);
-    },
-    canAccessCommunity() {
       return [0, 1, 2, 3].includes(this.userRole);
     },
     canAccessUserManagement() {

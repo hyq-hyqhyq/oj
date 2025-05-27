@@ -21,7 +21,8 @@ import AnswerQuestion_contest from '@/components/AnswerQuestion_contest'
 import ContestStatistics from '@/components/Statistics'
 import TeacherHome from '@/components/TeacherHome.vue'
 import AssistantHome from '@/components/AssistantHome.vue'
-import Setting from '@/components/Setting.vue';
+import Setting from '@/components/Setting.vue'
+import StudentManage from '@/components/StudentManage.vue'
 
 
 Vue.use(Router)
@@ -120,6 +121,11 @@ export default new Router({
       path: '/contest/statistics/:id',
       name: 'contest-statistics',
       component: ContestStatistics
+    },
+    {
+      path: '/studentmanage',
+      name: 'student-manage',
+      component: StudentManage
     },
   ]
 })

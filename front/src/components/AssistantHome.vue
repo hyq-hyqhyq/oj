@@ -17,7 +17,7 @@
           <h2>我的学生</h2>
           <el-table :data="students" style="width: 100%" fit>
             <el-table-column prop="student_id" label="学生ID" align="center" show-overflow-tooltip />
-            <el-table-column prop="username" label="用户名" align="center" show-overflow-tooltip />
+            <el-table-column prop="username" label="学生用户名" align="center" show-overflow-tooltip />
           </el-table>
         </div>
         <!-- 右侧：待批阅提交 -->
@@ -71,10 +71,7 @@ export default {
       const session = localStorage.getItem('session');
       const assistantId = localStorage.getItem('userID');
       try {
-        const aRes = await axios.post('/api/assistantstudents', {
-          assistant_id: assistantId,
-          student_ids: []
-        }, { 
+        const aRes = await axios.get('/api/assistantstudents', {
           headers: { session },
           params: { assistant_id: assistantId }
           });
