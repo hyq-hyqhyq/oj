@@ -8,6 +8,7 @@ from sqlalchemy.exc import SQLAlchemyError, TimeoutError, OperationalError
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import func
 from datetime import datetime
+from sqlalchemy import create_engine
 
 def parse_iso_datetime(iso_str):
     dt = datetime.fromisoformat(iso_str.replace('Z', '+00:00'))
@@ -419,7 +420,7 @@ class Judge(Resource):
         :param code: 要执行的SQL代码
         :return: 执行结果，格式为 (error: bool, msg: str)
         """
-        # 创建数据库引擎，连接到testdb数据库
+        # 创建数据库引擎，连接到test数据库
         engine = create_engine(ip_address)
         Session = sessionmaker(bind=engine)
         session = Session()
@@ -479,6 +480,20 @@ class Judge(Resource):
             session.rollback()  # 回滚事务
         finally:
             session.close()  # 关闭会话
+    def create_database(self, database_name):
+        # 创建数据库引擎，连接到MySQL服务器
+        engine = create_engine(ip_address)
+        Session = sessionmaker(bind=engine)
+        session = Session()
+
+        try:
+            session.begin()  # 开始事务
+            session.execute(text(f"CREATE DATABASE IF NOT EXISTS {database_name};"))
+            session.commit()  # 提交事务
+        except SQLAlchemyError:  # 捕获SQLAlchemy异常
+            session.rollback()  # 回滚事务
+        finally:
+            session.close()  # 关闭会话
 
     def post(self):
         data = request.get_json()
@@ -491,7 +506,10 @@ class Judge(Resource):
         question_id = int(question_id)
         test_cases = models.TestCase.query.filter_by(question_id=question_id).all()
         results = {}
-        
+
+        # 创建评测专用数据库（test)
+        self.create_database("test")
+
         for test_case in test_cases:
             test_id = test_case.id
             input_sql = str(test_case.input_sql)
@@ -512,9 +530,12 @@ class Judge(Resource):
                 elif "MemoryError" in user_output:
                     results[test_id] = (False, JUDGE_MEMLIMIT_EXCEED)
                 else:
+                    # Log the actual error message for debugging
+                    print(f"Runtime error in test case {test_id}: {user_output}")
                     results[test_id] = (False, JUDGE_RUNERROR)
             elif user_output != expected_output:
                 results[test_id] = (False, JUDGE_WRONGANSWER)
+                print(f"Wrong answer in test case {test_id}: expected {expected_output}, got {user_output}")
             else:
                 results[test_id] = (True, JUDGE_ACCEPTED)
         # 之后在此更新submit表的信息
