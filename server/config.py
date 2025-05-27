@@ -16,7 +16,7 @@ HTTP_CONFLICT = 409     # 冲突
 # 500
 HTTP_SERVER_ERROR = 500  # 服务器内部错误，无法完成请求
 
-SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:password@localhost/oj'
+SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:7511881@localhost/oj'
 DEBUG = True
 
 AUTH_STUDENT = 0

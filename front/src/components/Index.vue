@@ -14,6 +14,10 @@
               <td><span class="highlight">{{ name }}</span></td>
             </tr>
             <tr>
+              <td>助教：</td>
+              <td><span class="highlight">{{ assistantName }}</span></td>
+            </tr>
+            <tr>
               <td>身份：</td>
               <td><span class="highlight">{{ roleMap[role] }}</span></td>
             </tr>
@@ -78,6 +82,7 @@ export default {
       numberAnswered: 0,
       pass_count: 0,
       correctRate: 0,
+      assistantName: null,
       articlesCount: 0,
       currentTime: new Date().toLocaleString(),
       quote: '',
@@ -104,6 +109,14 @@ export default {
     this.updateTime();
     this.getDailyQuote();
     setInterval(this.updateTime, 1000); // 每秒更新时间
+    axios.get('/api/myassistant', {
+    headers: { session: localStorage.getItem('session') },
+      params: { student_id: localStorage.getItem('userID') }
+    }).then(res => {
+      this.assistantName = res.data.name || '暂未分配';
+    }).catch(e => {
+      console.error("获取助教信息失败", e);
+    });
   },
   watch: {
     chartData: {

@@ -1,11 +1,11 @@
 from sqlalchemy import ForeignKey, text, CheckConstraint, Column
-from sqlalchemy.dialects.mysql import INTEGER, VARCHAR, FLOAT, TEXT, BOOLEAN, TIMESTAMP
+from sqlalchemy.dialects.mysql import BIGINT, INTEGER, VARCHAR, FLOAT, TEXT, BOOLEAN, TIMESTAMP
 from config import db
 
 # 用户表
 class User(db.Model):
     __tablename__ = 'User'
-    id = Column(INTEGER, primary_key=True)
+    id = Column(BIGINT, primary_key=True)  # 改为 BIGINT
     username = Column(VARCHAR(50), unique=True, nullable=False)
     password = Column(VARCHAR(255), nullable=False)
     role = Column(INTEGER, nullable=False)
@@ -21,12 +21,12 @@ class Question(db.Model):
     title = Column(VARCHAR(1000), nullable=False)
     create_code = Column(TEXT, nullable=False)
     description = Column(TEXT, nullable=False)
-    input_example = Column(TEXT, nullable=False)
-    output_example = Column(TEXT, nullable=False)
+    input_example = Column(TEXT, nullable=True)
+    output_example = Column(TEXT, nullable=True)
     difficulty = Column(INTEGER, nullable=False)
-    answer_example = Column(TEXT, nullable=False)
+    answer_example = Column(TEXT, nullable=True)
     is_public = Column(BOOLEAN, nullable=False, default=True)
-    teacher_id = Column(INTEGER, ForeignKey('User.id'), nullable=False)
+    teacher_id = Column(BIGINT, ForeignKey('User.id'), nullable=False)  # 改为 BIGINT
     teacher = db.relationship('User', backref='questions')
 
 
@@ -34,7 +34,7 @@ class Question(db.Model):
 class Exam(db.Model):
     __tablename__ = 'Exam'
     id = Column(INTEGER, primary_key=True, autoincrement=True)
-    teacher_id = Column(INTEGER, ForeignKey('User.id'))
+    teacher_id = Column(BIGINT, ForeignKey('User.id'))
     start_time = Column(TIMESTAMP, nullable=False)
     end_time = Column(TIMESTAMP, nullable=False)
     teacher = db.relationship('User', backref='exams')
@@ -59,7 +59,7 @@ class ExamStudent(db.Model):
     __tablename__ = 'Exam_Student'
     # exam_id = -1:公共题目
     exam_id = Column(INTEGER, ForeignKey('Exam.id'), primary_key=True)
-    student_id = Column(INTEGER, ForeignKey('User.id'), primary_key=True)
+    student_id = Column(BIGINT, ForeignKey('User.id'), primary_key=True)
     score = Column(INTEGER, nullable=False, default=0)
     exam = db.relationship('Exam', backref='exam_students', passive_deletes=True)
     student = db.relationship('User', backref='exam_students')
@@ -71,8 +71,8 @@ class ExamStudent(db.Model):
 class ExamAssistantStudent(db.Model):
     __tablename__ = 'Exam_Assistant_Student'
     exam_id = Column(INTEGER, ForeignKey('Exam.id'), primary_key=True)
-    assistant_id = Column(INTEGER, ForeignKey('User.id'), primary_key=True)
-    student_id = Column(INTEGER, ForeignKey('User.id'), primary_key=True)
+    assistant_id = Column(BIGINT, ForeignKey('User.id'), primary_key=True)
+    student_id = Column(BIGINT, ForeignKey('User.id'), primary_key=True)
 
     exam = db.relationship('Exam', backref='assistant_students', passive_deletes=True)
     assistant = db.relationship('User', foreign_keys=[assistant_id], backref='assigned_students')
@@ -84,15 +84,15 @@ class TestCase(db.Model):
     id = Column(INTEGER, primary_key=True, autoincrement=True)
     tablename = Column(VARCHAR(1000), nullable=False)
     question_id = Column(INTEGER, ForeignKey('Question.id'))
-    input_sql = Column(VARCHAR(255), nullable=False)
-    output = Column(VARCHAR(255), nullable=False)
+    input_sql = Column(TEXT, nullable=False)
+    output = Column(TEXT, nullable=False)
     question = db.relationship('Question', backref='test_cases')
 
 # 提交表
 class Submission(db.Model):
     __tablename__ = 'Submission'
     id = Column(INTEGER, primary_key=True, autoincrement=True)
-    student_id = Column(INTEGER, ForeignKey('User.id'))
+    student_id = Column(BIGINT, ForeignKey('User.id'))
     exam_id = Column(INTEGER, ForeignKey('Exam.id'))
     question_id = Column(INTEGER, ForeignKey('Question.id'))
     submit_sql = Column(TEXT, nullable=False)
@@ -120,7 +120,7 @@ class Article(db.Model):
     __tablename__ = 'Article'
     id = Column(INTEGER, primary_key=True, autoincrement=True)
     title = Column(VARCHAR(1000), nullable=False)
-    user_id = Column(INTEGER, ForeignKey('User.id'))
+    user_id = Column(BIGINT, ForeignKey('User.id'))
     question_id = Column(INTEGER, ForeignKey('Question.id'))
     is_notice = Column(BOOLEAN, nullable=False)
     content = Column(TEXT, nullable=False)

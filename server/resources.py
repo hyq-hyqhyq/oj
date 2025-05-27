@@ -219,7 +219,6 @@ class Contest(Resource):
         # 先删除 ExamQuestion 等依赖表记录
         models.ExamQuestion.query.filter_by(exam_id=contest_id).delete()
         models.ExamStudent.query.filter_by(exam_id=contest_id).delete()
-        models.ExamAssistantStudent.query.filter_by(exam_id=contest_id).delete()
         models.Submission.query.filter_by(exam_id=contest_id).delete()
 
     # 然后删除考试本身
@@ -255,8 +254,10 @@ class ContestList(Resource):
 
         elif current_user_role == AUTH_ASSISTANT:
             # ✅ 助教：获取其被分配负责的学生考试
-            assistant_links = models.ExamAssistantStudent.query.filter_by(assistant_id=current_user_id).all()
-            exam_ids = {link.exam_id for link in assistant_links}
+            student_ids = db.session.query(models.AssistantStudent.student_id).filter_by(assistant_id=current_user_id).all()
+            student_ids = [s[0] for s in student_ids]
+            exam_ids = db.session.query(models.ExamStudent.exam_id).filter(models.ExamStudent.student_id.in_(student_ids)).distinct().all()
+            exam_ids = [e[0] for e in exam_ids]
             contests = models.Exam.query.filter(models.Exam.id.in_(exam_ids)).all()
 
         else:
@@ -408,6 +409,8 @@ class GetScore(Resource):
 # judge
 # 定义返回结果的字段
 
+ip_address = 'mysql+pymysql://root:7511881@localhost/test'
+
 class Judge(Resource):
     @auth_role(AUTH_ALL)
     def execute_sql(self, code):
@@ -417,7 +420,7 @@ class Judge(Resource):
         :return: 执行结果，格式为 (error: bool, msg: str)
         """
         # 创建数据库引擎，连接到testdb数据库
-        engine = create_engine('mysql+pymysql://ws:3917@localhost/test')
+        engine = create_engine(ip_address)
         Session = sessionmaker(bind=engine)
         session = Session()
 
@@ -459,7 +462,7 @@ class Judge(Resource):
         :param tablename: 需要删除的表名（可能有多个表名，以逗号分隔）
         """
         # 创建数据库引擎，连接到testdb数据库
-        engine = create_engine('mysql+pymysql://root:4546@localhost/test')
+        engine = create_engine(ip_address)
         Session = sessionmaker(bind=engine)
         session = Session()
 
@@ -627,47 +630,68 @@ class ManageUsers(Resource):
         return jsonify(data)
 
     def post(self):
-        # Delete a user
+        # Delete a user (legacy, if still used)
         user_id = int(request.json.get('id'))
         user = models.User.query.filter_by(id=user_id).first()
-
         if not user:
             return {"message": "未找到用户。"}, HTTP_NOT_FOUND
-
         db.session.delete(user)
         db.session.commit()
         return {}, HTTP_OK
 
     def put(self):
         # Update user role
-        user_id = request.json.get('id')
-        new_role = request.json.get('role')
-        user = models.User.query.filter_by(id=user_id).first()
+        try:
+            user_id = int(request.json.get('id'))
+            new_role = int(request.json.get('role'))
+        except (TypeError, ValueError):
+            return {"message": "参数错误：id 和 role 必须是整数。"}, HTTP_BAD_REQUEST
 
+        if new_role not in (0, 1, 2, 3):
+            return {"message": "无效的角色值。"}, HTTP_BAD_REQUEST
+
+        user = models.User.query.filter_by(id=user_id).first()
         if not user:
             return {"message": "未找到用户。"}, HTTP_NOT_FOUND
 
         user.role = new_role
         db.session.commit()
         return {"message": "切换成功。"}, HTTP_OK
-    
+
     def delete(self):
+        # Delete user and related records
         user_id = request.args.get('user_id')
-        user = models.User.query.filter_by(id=user_id).first()
+        try:
+            uid = int(user_id)
+        except (TypeError, ValueError):
+            return {"message": "user_id 必须是整数。"}, HTTP_BAD_REQUEST
+
+        user = models.User.query.filter_by(id=uid).first()
         if not user:
             return {"message": "未找到用户。"}, HTTP_NOT_FOUND
-        
-        for exam_student in models.ExamStudent.query.filter_by(student_id=user_id).all():
-            db.session.delete(exam_student)
-        for submit in models.Submission.query.filter_by(student_id=user_id).all():
-            db.session.delete(submit)
-        for article in models.Article.query.filter_by(user_id=user_id).all():
-            db.session.delete(article)
-        for question in models.Exam.query.filter_by(teacher_id=user_id).all():
-            db.session.delete(question)
+
+        # 删除考试-学生关联
+        for es in models.ExamStudent.query.filter_by(student_id=uid).all():
+            db.session.delete(es)
+        # 删除助教-学生关联
+        for eas in models.ExamAssistantStudent.query.filter_by(assistant_id=uid).all():
+            db.session.delete(eas)
+        for eas in models.ExamAssistantStudent.query.filter_by(student_id=uid).all():
+            db.session.delete(eas)
+        # 删除提交记录
+        for sub in models.Submission.query.filter_by(student_id=uid).all():
+            db.session.delete(sub)
+        # 删除文章
+        for art in models.Article.query.filter_by(user_id=uid).all():
+            db.session.delete(art)
+        # 删除老师创建的考试
+        for ex in models.Exam.query.filter_by(teacher_id=uid).all():
+            db.session.delete(ex)
+        # 最后删除用户
         db.session.delete(user)
         db.session.commit()
         return {"message": "删除成功。"}, HTTP_OK
+
 
 
 class StatusCount(Resource):

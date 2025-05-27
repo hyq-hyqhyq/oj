@@ -60,6 +60,14 @@
         class="nav-link"
         @click="handleClick('/setting')"
       >设置</router-link>
+      <!-- ✅ 新增：学生管理，仅教师可见 -->
+      <router-link
+        v-if="canAccessStudentManage"
+        :to="{ path: '/studentmanage' }"
+        :class="['nav-link', isActive('/studentmanage'), { 'activated': isCurrentPath('/studentmanage') }]"
+        @click="handleClick('/studentmanage')"
+      >学生管理</router-link>
+
     </div>
 
     <button class="logout-button" @click="logout">退出登录</button>
@@ -105,6 +113,9 @@ export default {
     },
     canDeleteQuestions() {
       return this.userRole === 1;
+    },
+    canAccessStudentManage() {
+      return this.userRole === 1; // 教师
     },
     homePath: function () {
       switch (this.userRole) {

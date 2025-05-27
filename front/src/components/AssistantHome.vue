@@ -17,7 +17,7 @@
           <h2>我的学生</h2>
           <el-table :data="students" style="width: 100%" fit>
             <el-table-column prop="student_id" label="学生ID" align="center" show-overflow-tooltip />
-            <el-table-column prop="exam_id" label="所属考试ID" align="center" show-overflow-tooltip />
+            <el-table-column prop="username" label="用户名" align="center" show-overflow-tooltip />
           </el-table>
         </div>
         <!-- 右侧：待批阅提交 -->
@@ -71,14 +71,17 @@ export default {
       const session = localStorage.getItem('session');
       const assistantId = localStorage.getItem('userID');
       try {
-        const aRes = await axios.post('/api/examassistantstudentlist', {
+        const aRes = await axios.post('/api/assistantstudents', {
           assistant_id: assistantId,
           student_ids: []
-        }, { headers: { session } });
+        }, { 
+          headers: { session },
+          params: { assistant_id: assistantId }
+          });
         this.students = aRes.data;
         this.studentCount = this.students.length;
       } catch (e) {
-        console.error('获取分配学生失败', e);
+        console.error('获取负责学生失败', e);
       }
       try {
         const sRes = await axios.get('/api/submitlist', {
