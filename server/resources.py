@@ -332,28 +332,96 @@ class ContestStudent(Resource):
         return {"exam_ids": exam_ids}, HTTP_OK
 
 
-class ExamAssistantStudentList(Resource):
+class AssistantStudent(Resource):
     @auth_role(AUTH_TEACHER)
     def post(self):
         data = request.get_json()
-        exam_id = data.get('exam_id')
-        assistant_id = data.get('assistant_id')
-        student_ids = data.get('student_ids', [])
 
-        if not (exam_id and assistant_id and student_ids):
-            return {"message": "信息不全"}, HTTP_BAD_REQUEST
+        if not isinstance(data, list):
+            return {"message": "数据格式应为列表"}, HTTP_BAD_REQUEST
 
-        for sid in student_ids:
-            link = models.ExamAssistantStudent(
-                exam_id=exam_id,
+        for item in data:
+            student_id = item.get('student_id')
+            assistant_id = item.get('assistant_id')
+
+            if not student_id or not assistant_id:
+                continue
+
+            existing = models.AssistantStudent.query.filter_by(student_id=student_id).first()
+            if existing:
+                db.session.delete(existing)
+
+            link = models.AssistantStudent(
                 assistant_id=assistant_id,
-                student_id=sid
+                student_id=student_id
             )
             db.session.add(link)
         db.session.commit()
         return {"message": "分配成功"}, HTTP_CREATED
+    
+    @auth_role(AUTH_ASSISTANT)
+    def get(self):
+        assistant_id = request.args.get("assistant_id")
+
+        if not assistant_id:
+            return {"message": "缺少 assistant_id"}, 400
+
+        # 查询分配给该助教的所有学生ID
+        links = models.AssistantStudent.query.filter_by(assistant_id=assistant_id).all()
+        student_ids = [link.student_id for link in links]
+
+        # 获取学生基本信息
+        students = models.User.query.filter(models.User.id.in_(student_ids)).all()
+
+        result = []
+        for s in students:
+            result.append({
+                "student_id": s.id,
+                "username": s.username
+            })
+
+        return jsonify(result)
+    
+    @auth_role(AUTH_TEACHER)
+    def delete(self):
+        student_id = request.json.get("student_id")
+        if not student_id:
+            return {"message": "缺少 student_id"}, 400
+
+        link = models.AssistantStudent.query.filter_by(student_id=student_id).first()
+        if not link:
+            return {"message": "该学生未绑定助教"}, 404
+
+        db.session.delete(link)
+        db.session.commit()
+        return {"message": "解除成功"}, 200
 
 
+class AssistantStudentList(Resource):
+    def get(self):
+        assistant_id = request.args.get('assistant_id')
+        if not assistant_id:
+            return {"message": "缺少 assistant_id 参数"}, HTTP_BAD_REQUEST
+        
+        try:
+            assistant_id = int(assistant_id)
+        except ValueError:
+            return {"message": "assistant_id 必须是整数"}, HTTP_BAD_REQUEST
+
+        # 查询所有被该助教管理的学生（通过 AssistantStudent 表）
+        links = AssistantStudent.query.filter_by(assistant_id=assistant_id).all()
+        student_ids = [link.student_id for link in links]
+
+        # 再从 User 表中获取这些学生的详细信息
+        students = models.User.query.filter(models.User.id.in_(student_ids)).all()
+        result = [{
+            "id": s.id,
+            "username": s.username,
+            "role": s.role
+        } for s in students]
+
+        return jsonify(result), HTTP_OK
+    
 class ContestScores(Resource):
     def get(self):
         contest_id = request.args.get('contest_id')
@@ -924,11 +992,30 @@ class Student(Resource):
     # TODO: 添加修改学生信息的函数
 
 class StudentList(Resource):
-    @auth_role(AUTH_ADMIN)
+    @auth_role(AUTH_ALL)
     def get(self):
-        students = models.User.query.filter_by(role=AUTH_STUDENT)
-        data = [model_to_dict(student) for student in students]
+        students = models.User.query.filter_by(role=AUTH_STUDENT).all()
+
+        data = []
+        for student in students:
+            student_dict = model_to_dict(student)
+
+            # 查询是否已分配助教
+            link = models.AssistantStudent.query.filter_by(student_id=student.id).first()
+            if link:
+                student_dict['assistant_id'] = link.assistant_id
+
+                assistant = models.User.query.filter_by(id=link.assistant_id).first()
+                student_dict['assistant_name'] = assistant.username if assistant else None
+            else:
+                student_dict['assistant_id'] = None
+                student_dict['assistant_name'] = None
+
+            data.append(student_dict)
+
         return jsonify(data)
+
+
 
 
 # setting

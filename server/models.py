@@ -67,16 +67,14 @@ class ExamStudent(db.Model):
         CheckConstraint('score >= 0', name='check_score_non_negative'),
     )
 
-# 考试-助教-学生对应表
-class ExamAssistantStudent(db.Model):
-    __tablename__ = 'Exam_Assistant_Student'
-    exam_id = Column(INTEGER, ForeignKey('Exam.id'), primary_key=True)
-    assistant_id = Column(BIGINT, ForeignKey('User.id'), primary_key=True)
+# 助教-学生对应表
+class AssistantStudent(db.Model):
+    __tablename__ = 'Assistant_Student'
     student_id = Column(BIGINT, ForeignKey('User.id'), primary_key=True)
+    assistant_id = Column(BIGINT, ForeignKey('User.id'), nullable=False)
 
-    exam = db.relationship('Exam', backref='assistant_students', passive_deletes=True)
-    assistant = db.relationship('User', foreign_keys=[assistant_id], backref='assigned_students')
-    student = db.relationship('User', foreign_keys=[student_id], backref='assigned_assistants')
+    student = db.relationship('User', foreign_keys=[student_id], backref='my_assistant')
+    assistant = db.relationship('User', foreign_keys=[assistant_id], backref='my_students')
 
 # 测试用例表
 class TestCase(db.Model):
