@@ -571,7 +571,6 @@ class Judge(Resource):
 
 
 
-
 # login
 class Login(Resource):
     def post(self):

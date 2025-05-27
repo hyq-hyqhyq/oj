@@ -1,4 +1,4 @@
-CREATE DATABASE IF NOT EXISTS oj
+create database IF NOT EXISTS oj
 DEFAULT CHARACTER SET utf8mb4 
 DEFAULT COLLATE utf8mb4_general_ci;
 use oj;
