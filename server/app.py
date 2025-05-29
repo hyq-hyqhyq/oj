@@ -43,7 +43,7 @@ def create_app():
     api.add_resource(ContestScores, '/api/contestscores')
     api.add_resource(CheckQuestions, '/api/check-questions')
     api.add_resource(CheckStudents, '/api/check-students')
-    api.add_resource(UpdateSettings, '/api/updatesettings')
+    api.add_resource(UpdateSettings, '/api/updateSettings')
     api.add_resource(AssistantStudent, '/api/assistantstudents')
 
     with app.app_context():

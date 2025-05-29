@@ -478,8 +478,8 @@ class GetScore(Resource):
 # judge
 # 定义返回结果的字段
 
-ip_address = 'mysql+pymysql://root:7511881@localhost/test'
-ip_address_no_db = 'mysql+pymysql://root:7511881@localhost'
+ip_address = 'mysql+pymysql://root:20050624Ljh_sh@localhost/test'
+ip_address_no_db = 'mysql+pymysql://root:20050624Ljh_sh@localhost'
 
 class Judge(Resource):
     def execute_sql(self, code):
@@ -882,22 +882,31 @@ class QuestionList(Resource):
     @auth_role(AUTH_ALL)
     def get(self):
         # 查询所有题目 -> 用于题目列表的查询和显示
-        student_id = int(request.args.get('student_id'))
-        questions = models.Question.query.all()
-        # 计算题目难度
+        student_id = request.args.get('student_id')
+        teacher_id = request.args.get('teacher_id')
         data = []
-        for question in questions:
-            all_submits = models.Submission.query.filter_by(question_id=question.id)
-            accepted_submits = all_submits.filter_by(status=0)
-            len_all_submits = all_submits.count()
-            len_accepted_submits = accepted_submits.count()
 
-            if len_all_submits:
-                accuracy = int(10000 * len_accepted_submits / len_all_submits) / 100.0
-            else:
-                accuracy = 0.0
-            ac = accepted_submits.filter_by(student_id=student_id).first() is not None
-            data.append(dict(model_to_dict(question), **{'accuracy' : accuracy, 'AC' : ac}))
+        if student_id:
+            student_id = int(student_id)
+            questions = models.Question.query.all()
+        # 计算题目难度
+            for question in questions:
+                all_submits = models.Submission.query.filter_by(question_id=question.id)
+                accepted_submits = all_submits.filter_by(status=0)
+                len_all_submits = all_submits.count()
+                len_accepted_submits = accepted_submits.count()
+
+                if len_all_submits:
+                    accuracy = int(10000 * len_accepted_submits / len_all_submits) / 100.0
+                else:
+                    accuracy = 0.0
+                ac = accepted_submits.filter_by(student_id=student_id).first() is not None
+                data.append(dict(model_to_dict(question), **{'accuracy' : accuracy, 'AC' : ac}))
+        elif teacher_id:
+            teacher_id = int(teacher_id)
+            questions = models.Question.query.filter_by(teacher_id=teacher_id).all()
+            for question in questions:
+                data.append(model_to_dict(question))
         return jsonify(data)
 
 
@@ -1019,18 +1028,18 @@ class UpdateSettings(Resource):
         new_password = data.get('password')
 
         if not user_id:
-            return jsonify({"message": "用户ID不能为空"}), 400
+            return {"message": "用户ID不能为空"}, 400
         
         # 查询用户是否存在
         user = models.User.query.filter_by(id=user_id).first()
         if not user:
-            return jsonify({"message": "用户不存在"}), 404
+            return {"message": "用户不存在"}, 404
 
         # 如果提供了新的用户名，检查用户名是否已经存在
         if new_username:
             existing_user = models.User.query.filter_by(username=new_username).first()
             if existing_user:
-                return jsonify({"message": "该用户名已被注册，请选择其他用户名"}), 409
+                return {"message": "该用户名已被注册，请选择其他用户名"}, 409
             user.username = new_username  # 更新用户名
 
         # 如果提供了新的密码，进行密码加密后更新
@@ -1041,7 +1050,7 @@ class UpdateSettings(Resource):
         # 提交数据库更改
         db.session.commit()
 
-        return jsonify({"message": "设置已成功更新", "username": user.username, "password": new_password}), 200
+        return {"message": "设置已成功更新", "username": user.username, "password": new_password}, 200
 
 
 # submit

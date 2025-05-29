@@ -60,6 +60,7 @@ export default {
       const session = localStorage.getItem('session');
       const userId = localStorage.getItem('userID');
       const data = {
+        id: userId,
         username: this.newUsername,
         password: this.newPassword
       };
