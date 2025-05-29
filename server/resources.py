@@ -9,6 +9,10 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy import func
 from datetime import datetime
 from sqlalchemy import create_engine
+from sqlalchemy.dialects.mysql import BIGINT
+
+ip_address = 'mysql+pymysql://root:7511881@localhost'
+test_db_url = 'mysql+pymysql://root:7511881@localhost/test'
 
 def parse_iso_datetime(iso_str):
     dt = datetime.fromisoformat(iso_str.replace('Z', '+00:00'))
@@ -477,11 +481,7 @@ class GetScore(Resource):
 
 # judge
 # 定义返回结果的字段
-
-ip_address = 'mysql+pymysql://root:7511881@localhost/test'
-
 class Judge(Resource):
-    @auth_role(AUTH_ALL)
     def execute_sql(self, code):
         """
         运行SQL代码，并捕获可能的错误和异常
@@ -489,7 +489,7 @@ class Judge(Resource):
         :return: 执行结果，格式为 (error: bool, msg: str)
         """
         # 创建数据库引擎，连接到test数据库
-        engine = create_engine(ip_address)
+        engine = create_engine(test_db_url)
         Session = sessionmaker(bind=engine)
         session = Session()
 
@@ -497,21 +497,20 @@ class Judge(Resource):
             session.begin()  # 开始事务
             start_time = time.time()  # 记录开始时间
             
-            result = session.execute(text(code))  # 执行SQL代码
-            session.commit()  # 提交事务
-
-            if result.returns_rows:  # 如果返回结果
-                output = result.fetchall()  # 获取所有结果
+            for stmt in code.split(';'):
+                stmt = stmt.strip()
+                if stmt:
+                    result = session.execute(text(stmt))
+            session.commit()
+            elapsed_time = time.time() - start_time
+            if elapsed_time > 5:
+                return (True, "TLE")
+            if result.returns_rows:
+                output = result.fetchall()
                 output = [dict(row) if isinstance(row, dict) else row for row in output]
             else:
                 output = "No data"
-
-            elapsed_time = time.time() - start_time  # 计算执行时间
-
-            if elapsed_time > 5:  # 判断是否超时
-                return (True, "TLE")  # 超时返回TLE
-
-            return (False, output)  # 返回执行结果
+            return (False, output)
 
         except OperationalError as e:  # 捕获操作错误异常
             session.rollback()  # 回滚事务
@@ -525,39 +524,34 @@ class Judge(Resource):
         finally:
             session.close()  # 关闭会话
 
-    def drop_tables(self, tablename):
+    def drop_database(self):
         """
         删除指定的表，避免数据干扰
         :param tablename: 需要删除的表名（可能有多个表名，以逗号分隔）
         """
-        # 创建数据库引擎，连接到testdb数据库
+        # 创建数据库引擎，连接到MySQL服务器（不指定数据库）
         engine = create_engine(ip_address)
         Session = sessionmaker(bind=engine)
         session = Session()
 
         try:
             session.begin()  # 开始事务
-            # 关闭外键检查
-            session.execute(text("SET FOREIGN_KEY_CHECKS = 0;"))
-            # 删除指定表
-            session.execute(text(f'DROP TABLE IF EXISTS {tablename};'))
-            # 重新打开外键检查
-            session.execute(text("SET FOREIGN_KEY_CHECKS = 1;"))
+            session.execute(text(f'DROP DATABASE IF EXISTS test;'))
             session.commit()  # 提交事务
         except SQLAlchemyError:  # 捕获SQLAlchemy异常
             session.rollback()  # 回滚事务
         finally:
             session.close()  # 关闭会话
-            
-    def create_database(self, database_name):
-        # 创建数据库引擎，连接到MySQL服务器
+
+    def create_database(self):
+        # 创建数据库引擎，连接到MySQL服务器（不指定数据库）
         engine = create_engine(ip_address)
         Session = sessionmaker(bind=engine)
         session = Session()
 
         try:
             session.begin()  # 开始事务
-            session.execute(text(f"CREATE DATABASE IF NOT EXISTS {database_name};"))
+            session.execute(text(f"CREATE DATABASE IF NOT EXISTS test;"))
             session.commit()  # 提交事务
         except SQLAlchemyError:  # 捕获SQLAlchemy异常
             session.rollback()  # 回滚事务
@@ -576,17 +570,16 @@ class Judge(Resource):
         test_cases = models.TestCase.query.filter_by(question_id=question_id).all()
         results = {}
 
-        # 创建评测专用数据库（test)
-        self.create_database("test")
-
         for test_case in test_cases:
             test_id = test_case.id
             input_sql = str(test_case.input_sql)
             expected_output = ast.literal_eval(test_case.output)
-            tablename = test_case.tablename
-            self.drop_tables(tablename)
+            self.drop_database()
+            self.create_database()
 
-            error, _ = self.execute_sql(create_code)
+            fixed_create_code = "USE test;\n" + create_code if not create_code.strip().lower().startswith("use test") else create_code
+
+            error, _ = self.execute_sql(fixed_create_code)
             error, _ = self.execute_sql(input_sql)
             # if error:
             #     results[test_id] = (True, JUDGE_RUNERROR)
@@ -891,7 +884,7 @@ class QuestionList(Resource):
     @auth_role(AUTH_ALL)
     def get(self):
         # 查询所有题目 -> 用于题目列表的查询和显示
-        student_id = int(request.args.get('student_id'))
+        student_id = BIGINT(request.args.get('student_id'))
         questions = models.Question.query.all()
         # 计算题目难度
         data = []
