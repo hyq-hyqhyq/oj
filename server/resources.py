@@ -9,10 +9,6 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy import func
 from datetime import datetime
 from sqlalchemy import create_engine
-from sqlalchemy.dialects.mysql import BIGINT
-
-ip_address = 'mysql+pymysql://root:7511881@localhost'
-test_db_url = 'mysql+pymysql://root:7511881@localhost/test'
 
 def parse_iso_datetime(iso_str):
     dt = datetime.fromisoformat(iso_str.replace('Z', '+00:00'))
@@ -481,6 +477,10 @@ class GetScore(Resource):
 
 # judge
 # 定义返回结果的字段
+
+ip_address = 'mysql+pymysql://root:7511881@localhost/test'
+ip_address_no_db = 'mysql+pymysql://root:7511881@localhost'
+
 class Judge(Resource):
     def execute_sql(self, code):
         """
@@ -489,7 +489,7 @@ class Judge(Resource):
         :return: 执行结果，格式为 (error: bool, msg: str)
         """
         # 创建数据库引擎，连接到test数据库
-        engine = create_engine(test_db_url)
+        engine = create_engine(ip_address)
         Session = sessionmaker(bind=engine)
         session = Session()
 
@@ -523,14 +523,13 @@ class Judge(Resource):
             return (True, str(e))  # 返回错误信息
         finally:
             session.close()  # 关闭会话
-
     def drop_database(self):
         """
         删除指定的表，避免数据干扰
         :param tablename: 需要删除的表名（可能有多个表名，以逗号分隔）
         """
         # 创建数据库引擎，连接到MySQL服务器（不指定数据库）
-        engine = create_engine(ip_address)
+        engine = create_engine(ip_address_no_db)
         Session = sessionmaker(bind=engine)
         session = Session()
 
@@ -545,7 +544,7 @@ class Judge(Resource):
 
     def create_database(self):
         # 创建数据库引擎，连接到MySQL服务器（不指定数据库）
-        engine = create_engine(ip_address)
+        engine = create_engine(ip_address_no_db)
         Session = sessionmaker(bind=engine)
         session = Session()
 
@@ -578,7 +577,6 @@ class Judge(Resource):
             self.create_database()
 
             fixed_create_code = "USE test;\n" + create_code if not create_code.strip().lower().startswith("use test") else create_code
-
             error, _ = self.execute_sql(fixed_create_code)
             error, _ = self.execute_sql(input_sql)
             # if error:
@@ -884,7 +882,7 @@ class QuestionList(Resource):
     @auth_role(AUTH_ALL)
     def get(self):
         # 查询所有题目 -> 用于题目列表的查询和显示
-        student_id = BIGINT(request.args.get('student_id'))
+        student_id = int(request.args.get('student_id'))
         questions = models.Question.query.all()
         # 计算题目难度
         data = []
