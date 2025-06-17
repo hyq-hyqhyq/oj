@@ -1,10 +1,13 @@
 <template>
-    <div>
-      <Navbar />
-      <div class="container">
-        <h1 class="title">学生成绩</h1>
-        <button @click="goBack" class="back-button">返回</button>
-        <table class="el-table">
+  <div class="index-bg">
+    <Navbar />
+    <div class="index-container">
+      <div class="index-card">
+        <h1 class="index-title">学生成绩</h1>
+        <div class="index-btn-row">
+          <button @click="goBack" class="index-btn index-btn-primary">返回</button>
+        </div>
+        <table class="index-table" v-if="studentScores.length">
           <thead>
             <tr>
               <th>学生ID</th>
@@ -20,112 +23,157 @@
             </tr>
           </tbody>
         </table>
+        <div v-else style="text-align:center;color:#888;margin-top:32px;">暂无成绩数据</div>
       </div>
     </div>
-  </template>
-  
-  <script>
-  import axios from 'axios';
-  import Navbar from '@/components/Navbar.vue';
-  
-  export default {
-    name: 'ContestScores',
-    components: {
-      Navbar
+  </div>
+</template>
+
+<script>
+import axios from 'axios';
+import Navbar from '@/components/Navbar.vue';
+
+export default {
+  name: 'ContestScores',
+  components: {
+    Navbar
+  },
+  data() {
+    return {
+      studentScores: []
+    };
+  },
+  created() {
+    this.fetchStudentScores();
+  },
+  methods: {
+    fetchStudentScores() {
+      const contestId = this.$route.params.id;
+      axios.get(`/api/contestscores`, {
+        headers: {
+          'session': localStorage.getItem('session')
+        },
+        params: {
+          contest_id: contestId
+        }
+      })
+      .then(response => {
+        this.studentScores = response.data;
+      })
+      .catch(error => {
+        alert("获取学生成绩时发生错误！")
+        alert(error);
+      });
     },
-    data() {
-      return {
-        studentScores: []
-      };
-    },
-    created() {
-      this.fetchStudentScores();
-    },
-    methods: {
-      fetchStudentScores() {
-        const contestId = this.$route.params.id;
-        axios.get(`/api/contestscores`, {
-          headers: {
-            'session': localStorage.getItem('session')
-          },
-          params: {
-            contest_id: contestId
-          }
-        })
-        .then(response => {
-          this.studentScores = response.data;
-        })
-        .catch(error => {
-          alert("获取学生成绩时发生错误！")
-          alert(error);
-        });
-      },
-      goBack() {
-        this.$router.push({ name: 'contest' });
-      }
+    goBack() {
+      this.$router.push({ name: 'contest' });
     }
-  };
-  </script>
-  
-  <style scoped>
-  .container {
-    padding: 20px;
-    background-color: #f9f9f9;
-    border-radius: 8px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
   }
-  
-  .title {
-    text-align: center;
-    font-size: 24px;
-    color: #333;
-    margin: 0;
-    padding: 20px 0;
+};
+</script>
+
+<style scoped>
+.index-bg {
+  min-height: 100vh;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(120deg, #e0eafc 0%, #cfdef3 100%);
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: row;
+}
+.index-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  margin-left: 210px;
+  min-width: 0;
+  min-height: 100vh;
+  box-sizing: border-box;
+  padding: 0 16px;
+}
+.index-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 6px 24px rgba(0, 123, 255, 0.08), 0 1.5px 6px rgba(0,0,0,0.04);
+  padding: 36px 32px 32px 32px;
+  margin-top: 32px;
+  max-width: 700px;
+  width: 100%;
+}
+.index-title {
+  text-align: center;
+  font-size: 2.2rem;
+  color: #1976d2;
+  font-weight: 700;
+  margin-bottom: 32px;
+  letter-spacing: 2px;
+}
+.index-btn-row {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+  margin-bottom: 24px;
+}
+.index-btn {
+  padding: 10px 28px;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  margin: 0 8px 8px 0;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.08);
+}
+.index-btn-primary {
+  background: #1976d2;
+  color: #fff;
+}
+.index-btn-primary:hover {
+  background: #1257e1;
+  transform: translateY(-2px);
+}
+.index-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+  background: #f7fbff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.04);
+}
+.index-table th,
+.index-table td {
+  border: 1px solid #cfd8dc;
+  padding: 12px 15px;
+  text-align: center;
+  font-size: 16px;
+}
+.index-table th {
+  background-color: #e3f2fd;
+  font-weight: bold;
+  color: #1976d2;
+}
+.index-table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+@media (max-width: 900px) {
+  .index-container {
+    margin-left: 0;
+    padding: 0 4px;
   }
-  
-  .back-button {
-    display: block;
-    margin: 0 auto 20px;
-    padding: 10px 20px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 3px;
-    cursor: pointer;
-    transition: background-color 0.3s;
+  .index-card {
+    max-width: 100%;
   }
-  
-  .back-button:hover {
-    background-color: #0056b3;
+}
+@media (max-width: 700px) {
+  .index-card {
+    padding: 18px 6px 18px 6px;
   }
-  
-  .el-table {
-    width: 100%;
-    border-collapse: collapse;
-    background-color: white;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-  }
-  
-  th, td {
-    padding: 12px 15px;
-    text-align: left;
-  }
-  
-  th {
-    background-color: #f2f2f2;
-    color: #333;
-    font-weight: bold;
-    text-align: center;
-  }
-  
-  td {
-    text-align: center;
-  }
-  
-  tr:nth-child(even) {
-    background-color: #f9f9f9;
-  }
-  </style>
-  
+}
+</style>

@@ -1,34 +1,40 @@
 <template>
-  <div>
+  <div class="main-bg">
     <Navbar />
-    <div class="assistant-home">
-      <!-- 顶部整排欢迎卡片 -->
-      <div class="card top-card">
-        <h1>您好，<span class="highlight">{{ name }}</span>（助教）</h1>
-        <p>您负责 <span class="highlight">{{ studentCount }}</span> 位学生。</p>
-        <div class="daily-quote">每日一言：{{ quote }}</div>
-        <div class="current-time">当前时间：{{ currentTime }}</div>
-      </div>
+    <div class="main-content">
+      <div class="dashboard-grid">
+        <div class="card assistant-card">
+          <h2>助教首页</h2>
+          <!-- 原有内容保持不变，直接放在这里 -->
+          <div>
+            <!-- 顶部整排欢迎卡片 -->
+            <div class="card top-card">
+              <h1>您好，<span class="highlight">{{ name }}</span>（助教）</h1>
+              <p>您负责 <span class="highlight">{{ studentCount }}</span> 位学生。</p>
+            </div>
 
-      <!-- 底部左右并排 -->
-      <div class="bottom-container">
-        <!-- 左侧：我的学生 -->
-        <div class="card left-column">
-          <h2>我的学生</h2>
-          <el-table :data="students" style="width: 100%" fit>
-            <el-table-column prop="student_id" label="学生ID" align="center" show-overflow-tooltip />
-            <el-table-column prop="username" label="学生用户名" align="center" show-overflow-tooltip />
-          </el-table>
-        </div>
-        <!-- 右侧：待批阅提交 -->
-        <div class="card right-column">
-          <h2>待批阅提交</h2>
-          <el-table :data="pendingSubmits" style="width: 100%" fit>
-            <el-table-column prop="id" label="提交ID" align="center" show-overflow-tooltip />
-            <el-table-column prop="student_id" label="学生ID" align="center" show-overflow-tooltip />
-            <el-table-column prop="question_id" label="题目ID" align="center" show-overflow-tooltip />
-            <el-table-column prop="submit_time" label="提交时间" align="center" show-overflow-tooltip />
-          </el-table>
+            <!-- 底部左右并排 -->
+            <div class="bottom-container">
+              <!-- 左侧：我的学生 -->
+              <div class="card left-column">
+                <h2>我的学生</h2>
+                <el-table :data="students" style="width: 100%" fit>
+                  <el-table-column prop="student_id" label="学生ID" align="center" show-overflow-tooltip />
+                  <el-table-column prop="username" label="学生用户名" align="center" show-overflow-tooltip />
+                </el-table>
+              </div>
+              <!-- 右侧：待批阅提交 -->
+              <div class="card right-column">
+                <h2>待批阅提交</h2>
+                <el-table :data="pendingSubmits" style="width: 100%" fit>
+                  <el-table-column prop="id" label="提交ID" align="center" show-overflow-tooltip />
+                  <el-table-column prop="student_id" label="学生ID" align="center" show-overflow-tooltip />
+                  <el-table-column prop="question_id" label="题目ID" align="center" show-overflow-tooltip />
+                  <el-table-column prop="submit_time" label="提交时间" align="center" show-overflow-tooltip />
+                </el-table>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -99,8 +105,56 @@ export default {
 </script>
 
 <style scoped>
-.assistant-home {
-  padding: 20px;
+.main-bg {
+  min-height: 100vh;
+  background: linear-gradient(120deg, #e0eafc 0%, #cfdef3 100%);
+  display: flex;
+}
+.main-content {
+  margin-left: 210px; /* 预留给Navbar */
+  flex: 1;
+  padding: 40px 40px 40px 40px;
+  min-height: 100vh;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+.dashboard-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+.card.assistant-card {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 4px 24px rgba(89,174,235,0.10);
+  padding: 24px 32px 28px 32px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+.card.assistant-card h2 {
+  font-size: 1.18em;
+  font-weight: bold;
+  color: #1565c0;
+  margin-bottom: 18px;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding-left: 14px;
+}
+.card.assistant-card h2::before {
+  content: '';
+  display: block;
+  width: 5px;
+  height: 22px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #42a5f5 0%, #1976d2 100%);
+  position: absolute;
+  left: 0;
+  top: 2px;
 }
 
 /* 顶部整排 */

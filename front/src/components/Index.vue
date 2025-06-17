@@ -1,34 +1,55 @@
 <template>
-  <div>
+  <div class="main-bg">
     <Navbar />
-    <div class="home-container">
-      <div class="left-column">
-        <div class="card user-info">
-          <h1>欢迎来到主页，<span class="highlight">{{ name }}</span></h1>
-          <p><span class="highlight">{{ name }}</span>, 你已经完成{{ numberAnswered }}道题啦！</p>
-          <div v-if="quote" class="daily-quote">每日一言：{{ quote }}</div>
-          <div class="current-time">当前时间：{{ currentTime }}</div>
-          <table>
-            <tr>
-              <td>昵称：</td>
-              <td><span class="highlight">{{ name }}</span></td>
-            </tr>
-            <tr>
-              <td>助教：</td>
-              <td><span class="highlight">{{ assistantName }}</span></td>
-            </tr>
-            <tr>
-              <td>身份：</td>
-              <td><span class="highlight">{{ roleMap[role] }}</span></td>
-            </tr>
-          </table>
+    <div class="main-content">
+      <div class="dashboard-grid">
+        <!-- 个人信息卡片 -->
+        <div class="card user-card">
+          <h2>个人信息</h2>
+          <div class="user-list">
+            <div class="user-item">
+              <span>昵称</span>
+              <span>{{ name }}</span>
+            </div>
+            <div class="user-item">
+              <span>身份</span>
+              <span>{{ roleMap[role] }}</span>
+            </div>
+            <div class="user-item">
+              <span>助教</span>
+              <span>{{ assistantName }}</span>
+            </div>
+          </div>
         </div>
-        <div class="card submissions">
+        <!-- 做题统计卡片 -->
+        <div class="card stat-card">
+          <h2>做题统计</h2>
+          <div class="stat-list-grid">
+            <div class="stat-item">
+              <span>题目总数</span>
+              <span>{{ totalQuestions }}</span>
+            </div>
+            <div class="stat-item">
+              <span>做过题数</span>
+              <span>{{ numberAnswered }}</span>
+            </div>
+            <div class="stat-item">
+              <span>通过题数</span>
+              <span>{{ pass_count }}</span>
+            </div>
+            <div class="stat-item">
+              <span>通过率</span>
+              <span>{{ correctRate }}%</span>
+            </div>
+          </div>
+        </div>
+        <!-- 最近提交卡片 -->
+        <div class="card submissions-card">
           <h2>最近提交</h2>
-          <el-table :data="submissions" style="width: 100%">
-            <el-table-column prop="id" label="提交ID" width="100" align="center"></el-table-column>
+          <el-table :data="submissions" style="width: 100%" height="220">
+            <el-table-column prop="id" label="提交ID" width="80" align="center"></el-table-column>
             <el-table-column prop="question_id" label="题目ID" align="center"></el-table-column>
-            <el-table-column prop="status" label="提交结果" align="center">
+            <el-table-column prop="status" label="结果" align="center">
               <template slot-scope="scope">
                 <span :style="{ color: getStatusColor(scope.row.status) }">{{ judgeResult(scope.row.status) }}</span>
               </template>
@@ -36,22 +57,6 @@
             <el-table-column prop="pass_rate" label="通过率" align="center"></el-table-column>
             <el-table-column prop="submit_time" label="时间" align="center"></el-table-column>
           </el-table>
-        </div>
-      </div>
-      <div class="right-column">
-        <div class="card statistics">
-          <h2>做题统计</h2>
-          <div class="stat">
-            <span class="tag">题目总数: {{ totalQuestions }}</span>
-            <span class="tag">做过题数: {{ numberAnswered }}</span>
-            <span class="tag">通过题数: {{ pass_count }}</span>
-            <span class="tag">通过率: {{ correctRate }}%</span>
-            <span class="tag">发表文章数: {{ articlesCount }}</span>
-          </div>
-        </div>
-        <div class="card chart">
-          <h2>提交结果</h2>
-          <PieChart ref="pieChart" :chart-data="chartData" />
         </div>
       </div>
     </div>
@@ -69,8 +74,7 @@ export default {
     PieChart: {
       extends: Pie,
       props: ['chartData'],
-      mounted() {
-      }
+      mounted() {}
     }
   },
   data() {
@@ -84,31 +88,19 @@ export default {
       correctRate: 0,
       assistantName: null,
       articlesCount: 0,
-      currentTime: new Date().toLocaleString(),
-      quote: '',
       submissions: [],
       chartData: {
         labels: ['Accepted', 'Wrong Answer', 'Runtime Error', 'Time Limit Exceeded', 'Memory Limit Exceeded'],
         datasets: [{
           label: 'Statistics',
-          backgroundColor: ['#83b799', '#e7cfc9', '#c1beb0', '#f5b7b1', '#aed6f1'],
+          backgroundColor: ['#4fc3f7', '#ffb74d', '#e57373', '#9575cd', '#81c784'],
           data: [0, 0, 0, 0, 0]
         }]
-      },
-      quotes: [
-        "程序员的世界里没有Bug，只有无限可能的Feature！",
-        "代码如诗，写出来要让人赏心悦目。",
-        "一天不写代码，手就会发痒。",
-        "没有什么问题是重启解决不了的，如果有，那就再重启一次。",
-        "代码是程序员与世界沟通的桥梁。"
-      ]
+      }
     };
   },
   mounted() {
     this.fetchInfo();
-    this.updateTime();
-    this.getDailyQuote();
-    setInterval(this.updateTime, 1000); // 每秒更新时间
     axios.get('/api/studentlist', {
       headers: { session: localStorage.getItem('session') }
     }).then(res => {
@@ -143,17 +135,8 @@ export default {
           this.totalQuestions = response.data.length;
         })
         .catch(error => {
-          console.error("详细错误信息:", error);
-          if (error.response) {
-            console.log("服务器有响应", error.response.data);
-          } else if (error.request) {
-            console.log("请求发出但无响应", error.request);
-          } else {
-            console.log("请求配置错误", error.message);
-          }
           alert("获取题目列表失败: " + error.message);
         });
-
 
       axios.get('/api/submitlist', {
         headers: {
@@ -171,7 +154,6 @@ export default {
           alert("获取提交列表失败: " + error);
         });
 
-      // 获取做过的题目数
       axios.get('/api/answeredquestions', {
         headers: {
           'session': localStorage.getItem('session')
@@ -187,7 +169,6 @@ export default {
           alert("获取做过的题目数失败: " + error);
         });
 
-      // 获取发表文章数
       axios.get('/api/communitylist', {
         headers: {
           'session': localStorage.getItem('session')
@@ -202,7 +183,7 @@ export default {
         .catch(error => {
           alert("获取发表文章数失败: " + error);
         });
-      // 获取提交结果统计数据
+
       axios.get('/api/statuscount', {
         headers: {
           'session': localStorage.getItem('session')
@@ -222,22 +203,15 @@ export default {
           alert("获取提交结果统计数据失败: " + error);
         });
     },
-    updateTime() {
-      this.currentTime = new Date().toLocaleString();
-    },
-    getDailyQuote() {
-      const randomIndex = Math.floor(Math.random() * this.quotes.length);
-      this.quote = this.quotes[randomIndex];
-    },
     getStatusColor(status) {
       const colorMapping = {
-        0: 'green',
-        1: 'red',
-        2: 'orange',
-        3: 'purple',
-        4: 'blue'
+        0: '#43a047',
+        1: '#e53935',
+        2: '#fb8c00',
+        3: '#8e24aa',
+        4: '#1e88e5'
       };
-      return colorMapping[status] || 'black';
+      return colorMapping[status] || '#333';
     },
     judgeResult(status) {
       const mapping = {
@@ -254,53 +228,181 @@ export default {
 </script>
 
 <style scoped>
-.home-container {
+.main-bg {
+  min-height: 100vh;
+  background: linear-gradient(120deg, #e0eafc 0%, #cfdef3 100%);
+  display: flex;
+}
+.main-content {
+  margin-left: 210px; /* 预留给Navbar */
+  flex: 1;
+  padding: 40px 40px 40px 40px;
+  min-height: 100vh;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: 220px 220px auto;
+  gap: 32px;
+}
+.card {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 4px 24px rgba(89,174,235,0.10);
+  padding: 8px 24px 20px 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  min-width: 0;
+  min-height: 0;
+}
+.card h2 {
+  font-size: 1.18em;
+  font-weight: bold;
+  color: #1565c0;
+  margin-bottom: 12px;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding-left: 14px;
+}
+
+.card h2::before {
+  content: '';
+  display: block;
+  width: 5px;
+  height: 22px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #42a5f5 0%, #1976d2 100%);
+  position: absolute;
+  left: 0;
+  top: 2px;
+}
+.user-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 1.08em;
+  text-align: left; /* 左对齐 */
+}
+.user-card li {
+  margin-bottom: 15px;
+  color: #1976d2; /* 主题蓝色，更美观 */
+}
+.stat-card .stat-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 2px;
+}
+.stat-card .stat-list-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 10px;
+  margin-top: 18px;
+  width: 100%;
+  box-sizing: border-box;
+}
+.stat-item {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1em;
+  font-weight: 600;
+  color: #1976d2;
+  background: #e3f2fd;
+  border-radius: 8px;
+  padding: 8px 12px;      /* 调整为和 .user-item 一致 */
+  min-height: 36px;       /* 和 .user-item 视觉高度一致 */
+  width: 100%;
+  box-sizing: border-box;
+}
+.stat-item span:last-child {
+  align-self: center;
+  font-size: 1.08em;
+  margin-top: 0;
+}
+.chart-card {
+  align-items: center;
+  justify-content: center;
+}
+.chart-card h2 {
+  margin-bottom: 18px;
+}
+.submissions-card {
+  grid-column: span 2;
+  min-height: 220px;
+}
+.submissions-card h2 {
+  margin-bottom: 10px;
+}
+@media (max-width: 1100px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(4, auto);
+  }
+  .submissions-card {
+    grid-column: span 1;
+  }
+}
+.user-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 18px;
+  width: 100%;
+  box-sizing: border-box;
+}
+.user-item {
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  font-size: 1em;
+  font-weight: 600;
+  color: #1976d2;
+  background: #e3f2fd;
+  border-radius: 8px;
+  padding: 5px 12px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.left-column {
-  width: 70%;
+.submissions-card .el-table {
+  background: #f8fbff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(89,174,235,0.08);
+  overflow: hidden;
+  font-size: 1em;
 }
 
-.right-column {
-  width: 25%;
+.submissions-card .el-table th {
+  background: linear-gradient(90deg, #e3f2fd 0%, #bbdefb 100%);
+  color: #1565c0;
+  font-weight: bold;
+  font-size: 1.05em;
+  border-bottom: 1.5px solid #90caf9;
 }
 
-.card {
-  background-color: #fff;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-  margin-bottom: 20px;
+.submissions-card .el-table td {
+  background: transparent;
+  color: #1976d2;
+  border-bottom: 1px solid #e3f2fd;
+  padding: 8px 0;
 }
 
-.highlight {
-  color: #4A90E2;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  text-shadow: 1px 1px 1px #aaa;
+.submissions-card .el-table tr:hover > td {
+  background: #e3f2fd !important;
+  transition: background 0.2s;
 }
 
-.daily-quote {
-  font-size: 1.2em;
-  margin-top: 10px;
-}
-
-.current-time {
-  margin-top: 10px;
-}
-
-.stat {
-  display: flex;
-  flex-wrap: wrap;
-}
-
-.tag {
-  background-color: #e8eaf6;
-  color: #4A90E2;
-  padding: 5px 10px;
-  margin: 5px;
-  border-radius: 5px;
-  font-size: 0.9em;
+.submissions-card .el-table__body-wrapper {
+  border-radius: 0 0 12px 12px;
+  overflow: hidden;
 }
 </style>

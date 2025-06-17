@@ -1,12 +1,9 @@
 <template>
-  <nav class="navbar">
-    <!-- 添加 logo -->
-    <div class="logo">
-      <img src="@/assets/logo.png" alt="Logo">
+  <nav class="sidebar-navbar">
+    <div class="sidebar-header">
+      <span class="sidebar-title">H.L.L.X  OJ</span>
     </div>
-
-    <!-- 根据用户角色动态显示链接 -->
-    <div class="links-container">
+    <div class="sidebar-links">
       <router-link
         v-if="canAccessHomePage"
         :to="homePath"
@@ -49,7 +46,6 @@
         :class="['nav-link', isActive('/admin'), { 'activated': isCurrentPath('/admin') }]"
         @click="handleClick('/admin')"
       >用户管理</router-link>
-      <!-- ✅ 新增：学生管理，仅教师可见 -->
       <router-link
         v-if="canAccessStudentManage"
         :to="{ path: '/studentmanage' }"
@@ -60,10 +56,8 @@
         :to="{ path: '/setting' }"
         class="nav-link"
         @click="handleClick('/setting')"
-      >设置</router-link>
-
+      >用户设置</router-link>
     </div>
-
     <button class="logout-button" @click="logout">退出登录</button>
   </nav>
 </template>
@@ -156,70 +150,125 @@ export default {
 </script>
 
 <style scoped>
-.navbar {
+.sidebar-navbar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 210px;
+  height: 100vh;
+  background: linear-gradient(180deg, #59aeeb 0%, #0a1a3c 100%);
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: stretch;
+  z-index: 1000;
+  box-shadow: 2px 0 12px rgba(0,0,0,0.08);
+}
+
+.sidebar-header {
+  padding: 32px 0 18px 0;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  background-color: #fff;
-  padding: 0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid #e0e0e0;
 }
 
-.logo img {
-  height: 40px;
-  margin: 10px 20px;
+.sidebar-title {
+  font-size: 1.5em;
+  font-weight: bold;
+  color: #fff;
+  letter-spacing: 2px;
+  margin-bottom: 8px;
 }
 
-.links-container {
-  display: flex;
+.sidebar-nickname {
+  color: #e0e0e0;
+  font-size: 1em;
+  margin-bottom: 0;
+}
+
+.sidebar-links {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin-top: 24px;
+  gap: 6px;
 }
 
 .nav-link {
-  flex: 1;
-  text-align: center;
+  display: block;
+  width: 100%;
+  padding: 14px 0 14px 36px;
+  color: #7fd0ff !important;
   text-decoration: none;
-  color: #000;
-  padding: 15px 0;
-  transition: all 0.3s ease;
-  font-size: 16px;
-  background-color: #fff;
-  border: none;
-  border-bottom: 2px solid transparent;
+  font-size: 1.2em;
+  border-left: 4px solid transparent;
+  background: none;
+  transition: all 0.2s;
+  letter-spacing: 1px;
+  border-radius: 0 20px 20px 0;
+  margin-bottom: 2px;
 }
 
-.nav-link:hover {
-  background-color: #f0f0f0;
-}
-
-.nav-link.active {
-  background-color: #000;
-  color: #fff;
-  border-bottom: 2px solid #000;
-}
-
-.nav-link.activated {
-  transform: scale(1.05);
-  background-color: #666;
-  color: #fff;
-  font-size: 18px;
-  box-shadow: 0 4px 8px rgba(102, 102, 102, 0.5);
+.nav-link:hover, .nav-link.active, .nav-link.activated {
+  background: rgba(255,255,255,0.13);
+  color: white!important;
+  border-left: 4px solid #59aeeb;
+  font-weight: bold;
+  transform: translateX(4px) scale(1.04);
 }
 
 .logout-button {
-  background-color: #ff4d4d;
-  color: #fff;
+  margin: 24px 18px 32px 18px;
+  padding: 12px 0;
+  background: #59aeeb;
+  color: white;
   border: none;
-  padding: 10px 20px;
-  margin: 10px 20px;
-  border-radius: 5px;
+  border-radius: 8px;
+  font-size: 1.08em;
+  font-weight: bold;
   cursor: pointer;
-  transition: transform 0.2s, background-color 0.2s;
+  box-shadow: 0 2px 8px rgba(89,174,235,0.08);
+  transition: background 0.2s, color 0.2s, transform 0.2s;
 }
 
 .logout-button:hover {
-  transform: translateY(-2px);
-  background-color: #ff1a1a;
+  background: #59aeeb;
+  color: #fff;
+  transform: scale(1.05);
 }
 
+@media (max-width: 700px) {
+  .sidebar-navbar {
+    width: 100vw;
+    height: auto;
+    flex-direction: row;
+    position: static;
+    box-shadow: none;
+  }
+  .sidebar-header, .sidebar-links {
+    flex-direction: row;
+    align-items: center;
+    padding: 0;
+    margin: 0;
+  }
+  .sidebar-header {
+    border-bottom: none;
+    padding: 10px 0;
+  }
+  .sidebar-links {
+    flex: 1;
+    gap: 0;
+    margin-top: 0;
+  }
+  .nav-link {
+    padding: 10px 16px;
+    border-radius: 8px;
+    border-left: none;
+    margin-bottom: 0;
+  }
+  .logout-button {
+    margin: 10px;
+    padding: 10px 16px;
+  }
+}
 </style>

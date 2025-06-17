@@ -1,49 +1,49 @@
 <template>
-  <div>
+  <div class="main-bg">
     <Navbar />
-    <div class="container">
-      <el-menu :default-active="'1'" class="side-menu" @select="handleSelect">
-        <el-menu-item index="1">所有记录</el-menu-item>
-        <el-menu-item index="2">我的记录</el-menu-item>
-      </el-menu>
-      <div class="content">
-        <h1 class="header-title">提交记录</h1>
-
-        <!-- 搜索框和按钮 -->
-        <div class="search-bar">
-          <el-input
-            type="text"
-            class="search-field"
-            v-model="searchQuery"
-            placeholder="搜索题目ID..."
-            clearable
-          ></el-input>
+    <div class="main-content">
+      <div class="card submit-card">
+        <div class="card-header-row">
+          <h2>提交记录</h2>
+          <div class="search-bar">
+            <el-input
+              type="text"
+              class="search-field"
+              v-model="searchQuery"
+              placeholder="搜索题目ID..."
+              clearable
+            ></el-input>
+          </div>
         </div>
-
-        <!-- 表格展示提交记录 -->
-        <el-table :data="filteredSubmissions" style="width: 100%;" border stripe>
-          <el-table-column prop="id" label="提交ID" min-width="120" align="center"></el-table-column>
-          <el-table-column prop="submit_time" label="提交时间" min-width="150" align="center">
-            <template slot-scope="scope">
-              {{ scope.row.submit_time | formatDate }}
-            </template>
-          </el-table-column>
-          <el-table-column prop="question_id" label="题目ID" min-width="120" align="center"></el-table-column>
-          <el-table-column v-if="currentTab === '1'" prop="student_id" label="学生ID" min-width="120" align="center"></el-table-column>
-          <el-table-column v-if="currentTab === '2'" prop="submit_sql" label="提交代码" min-width="140" align="center">
-            <template slot-scope="scope">
-              <el-button @click="showCode(scope.row.submit_sql)" type="success" size="small">点击查看</el-button>
-            </template>
-          </el-table-column>
-          <el-table-column prop="status" label="结果" min-width="150" align="center">
-            <template slot-scope="scope">
-              <span :style="{ color: getStatusColor(scope.row.status) }">{{ judgeResult(scope.row.status) }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column prop="pass_rate" label="通过率" min-width="120" align="center"></el-table-column>
-        </el-table>
-
-        <!-- 弹窗 -->
+        <div class="section-container">
+          <div class="side-and-table">
+            <el-menu :default-active="'1'" class="side-menu" @select="handleSelect">
+              <el-menu-item index="1">所有记录</el-menu-item>
+              <el-menu-item index="2">我的记录</el-menu-item>
+            </el-menu>
+            <el-table :data="filteredSubmissions" class="records-table" border stripe>
+              <el-table-column prop="id" label="提交ID" min-width="120" align="center"></el-table-column>
+              <el-table-column prop="submit_time" label="提交时间" min-width="150" align="center">
+                <template slot-scope="scope">
+                  {{ scope.row.submit_time | formatDate }}
+                </template>
+              </el-table-column>
+              <el-table-column prop="question_id" label="题目ID" min-width="120" align="center"></el-table-column>
+              <el-table-column v-if="currentTab === '1'" prop="student_id" label="用户ID" min-width="120" align="center"></el-table-column>
+              <el-table-column v-if="currentTab === '2'" prop="submit_sql" label="提交代码" min-width="140" align="center">
+                <template slot-scope="scope">
+                  <el-button @click="showCode(scope.row.submit_sql)" type="success" size="small">点击查看</el-button>
+                </template>
+              </el-table-column>
+              <el-table-column prop="status" label="结果" min-width="150" align="center">
+                <template slot-scope="scope">
+                  <span :style="{ color: getStatusColor(scope.row.status) }">{{ judgeResult(scope.row.status) }}</span>
+                </template>
+              </el-table-column>
+              <el-table-column prop="pass_rate" label="得分" min-width="120" align="center"></el-table-column>
+            </el-table>
+          </div>
+        </div>
         <el-dialog :visible.sync="dialogVisible" width="60%" :before-close="handleClose">
           <template slot="title">
             <span>提交代码</span>
@@ -169,95 +169,112 @@ export default {
 </script>
 
 <style scoped>
-.container {
+.main-bg {
+  min-height: 100vh;
+  background: linear-gradient(120deg, #e0eafc 0%, #cfdef3 100%);
   display: flex;
-  padding: 20px;
-  background-color: #f9f9f9;
+}
+.main-content {
+  margin-left: 210px;
+  flex: 1;
+  padding: 40px 0 40px 0;
+  min-height: 100vh;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.card.submit-card {
+  width: 1100px;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 4px 24px rgba(89,174,235,0.10);
+  padding: 24px 28px 28px 28px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  min-width: 0;
+  min-height: 0;
+  margin-top: 40px;
+}
+.card-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+.card-header-row h2 {
+  font-size: 1.35em;
+  font-weight: bold;
+  color: #1565c0;
+  margin-bottom: 0;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding-left: 16px;
+}
+.card-header-row h2::before {
+  content: '';
+  display: block;
+  width: 5px;
+  height: 24px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #42a5f5 0%, #1976d2 100%);
+  position: absolute;
+  left: 0;
+  top: 2px;
+}
+.section-container {
+  background-color: #ffffff;
+  padding: 0;
   border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
+  box-shadow: none;
+  /* 新增：去除原有的 block 布局 */
+}
+
+.side-and-table {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 24px;
 }
 
 .side-menu {
-  width: 200px;
-  height: calc(100vh - 40px);
-  border-right: 1px solid #ebeef5;
-  border-radius: 10px 0 0 10px;
+  width: 180px;
+  border-radius: 10px;
+  margin-bottom: 0;
+  flex-shrink: 0;
 }
 
-.content {
+.records-table {
   flex: 1;
-  padding: 20px;
-  margin-left: 20px;
-  border-radius: 0 10px 10px 0;
-  background-color: white;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-  min-width: 800px;
-}
-
-.header-title {
-  text-align: center;
-  color: #007bff;
-  margin-bottom: 20px;
-  font-size: 24px;
-  font-weight: bold;
-}
-
-.search-bar {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 20px;
-  transition: all 0.3s ease;
-}
-
-.search-field {
-  width: 300px;
-  max-width: 100%;
-  padding: 10px;
-  font-size: 1rem;
-  border-radius: 5px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
 }
 
 .el-table {
-  width: 100%;
-  border-collapse: collapse;
-  background-color: white;
-  border-radius: 8px;
+  background: #f8fbff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(89,174,235,0.08);
   overflow: hidden;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-  table-layout: auto;
+  font-size: 1em;
 }
-
-.el-table th,
-.el-table td {
-  padding: 12px 15px;
-  text-align: center;
-  white-space: nowrap;
-}
-
 .el-table th {
-  background-color: #f4f4f4;
+  background: linear-gradient(90deg, #e3f2fd 0%, #bbdefb 100%);
+  color: #1565c0;
   font-weight: bold;
+  font-size: 1.05em;
+  border-bottom: 1.5px solid #90caf9;
 }
-
-.view-code-btn {
-  background-color: #28a745;
-  color: white;
-  border: none;
-  padding: 5px 10px;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
+.el-table td {
+  background: transparent;
+  color: #1976d2;
+  border-bottom: 1px solid #e3f2fd;
+  padding: 8px 0;
 }
-
-.view-code-btn:hover {
-  background-color: #218838;
+.el-table tr:hover > td {
+  background: #e3f2fd !important;
+  transition: background 0.2s;
 }
-
 .code-display {
   font-family: 'Source Code Pro', 'Consolas', 'Unifont', monospace;
   background-color: #f5f5f5;
@@ -269,46 +286,7 @@ export default {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
 }
-
 .dialog-footer {
   text-align: right;
-}
-
-.el-dialog {
-  border-radius: 10px;
-}
-
-.el-button {
-  transition: all 0.3s ease;
-}
-
-.el-button:hover {
-  transform: translateY(-2px);
-}
-
-.el-button:active {
-  transform: translateY(0);
-}
-
-.el-button--primary {
-  background-color: #007bff;
-  border-color: #007bff;
-  color: white;
-}
-
-.el-button--primary:hover {
-  background-color: #0056b3;
-  border-color: #0056b3;
-}
-
-.el-button--success {
-  background-color: #28a745;
-  border-color: #28a745;
-  color: white;
-}
-
-.el-button--success:hover {
-  background-color: #218838;
-  border-color: #218838;
 }
 </style>

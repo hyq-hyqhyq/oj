@@ -174,7 +174,7 @@ header {
   justify-content: space-between;
   align-items: center;
   padding: 10px 20px;
-  background-color:rgb(7, 12, 113);
+  background: linear-gradient(90deg,#0a1a3c 0%, #59aeeb 100%);
 }
 
 .title {

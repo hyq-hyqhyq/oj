@@ -1,40 +1,41 @@
 <template>
-  <div>
+  <div class="main-bg">
     <Navbar />
-    <div class="create-question-container">
-      <h1 class="header-title">题目列表</h1>
-      <div class="section-container">
-        <el-table
-          :data="filteredQuestions.slice((currentPage - 1) * pageSize, currentPage * pageSize)"
-          style="width: 100%"
-          border
-          stripe
-        >
-          <el-table-column prop="id" label="ID" width="100" align="center" />
-          <el-table-column prop="title" label="标题" align="center" />
-          <el-table-column label="操作" width="150" align="center">
-            <template #default="scope">
-              <el-button @click="enterQuestion(scope.row.id)" type="success" size="small">进入</el-button>
-              <!-- 删除按钮 -->
-              <el-button
-                v-if="canDeleteQuestions"
-                @click="deleteQuestion(scope.row.id)"
-                type="danger"
-                size="small"
-              >
-                删除
-              </el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-        <el-pagination
-          @current-change="handlePageChange"
-          :current-page="currentPage"
-          :page-size="pageSize"
-          :page-sizes="[5, 10, 20, 30]"
-          layout="total, sizes, prev, pager, next, jumper"
-          :total="filteredQuestions.length"
-        />
+    <div class="main-content">
+      <div class="card question-card">
+        <h2>题目列表</h2>
+        <div class="section-container">
+          <el-table
+            :data="filteredQuestions.slice((currentPage - 1) * pageSize, currentPage * pageSize)"
+            style="width: 100%"
+            border
+            stripe
+          >
+            <el-table-column prop="id" label="ID" width="100" align="center" />
+            <el-table-column prop="title" label="标题" align="center" />
+            <el-table-column label="操作" width="150" align="center">
+              <template #default="scope">
+                <el-button @click="enterQuestion(scope.row.id)" type="success" size="small">进入</el-button>
+                <el-button
+                  v-if="canDeleteQuestions"
+                  @click="deleteQuestion(scope.row.id)"
+                  type="danger"
+                  size="small"
+                >
+                  删除
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+          <el-pagination
+            @current-change="handlePageChange"
+            :current-page="currentPage"
+            :page-size="pageSize"
+            :page-sizes="[5, 10, 20, 30]"
+            layout="total, sizes, prev, pager, next, jumper"
+            :total="filteredQuestions.length"
+          />
+        </div>
       </div>
     </div>
   </div>
@@ -171,6 +172,90 @@ export default {
 </script>
 
 <style scoped>
+.main-bg {
+  min-height: 100vh;
+  background: linear-gradient(120deg, #e0eafc 0%, #cfdef3 100%);
+  display: flex;
+}
+.main-content {
+  margin-left: 210px; /* 预留给Navbar */
+  flex: 1;
+  padding: 40px 0 40px 0;
+  min-height: 100vh;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.card.question-card {
+  width: 1000px;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 4px 24px rgba(89,174,235,0.10);
+  padding: 24px 28px 28px 28px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  min-width: 0;
+  min-height: 0;
+  margin-top: 40px;
+}
+.card.question-card h2 {
+  font-size: 1.35em;
+  font-weight: bold;
+  color: #1565c0;
+  margin-bottom: 18px;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding-left: 16px;
+}
+.card.question-card h2::before {
+  content: '';
+  display: block;
+  width: 5px;
+  height: 24px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #42a5f5 0%, #1976d2 100%);
+  position: absolute;
+  left: 0;
+  top: 2px;
+}
+.section-container {
+  background-color: #ffffff;
+  padding: 20px 0 0 0;
+  border-radius: 10px;
+  box-shadow: none;
+}
+.el-table {
+  background: #f8fbff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(89,174,235,0.08);
+  overflow: hidden;
+  font-size: 1em;
+}
+.el-table th {
+  background: linear-gradient(90deg, #e3f2fd 0%, #bbdefb 100%);
+  color: #1565c0;
+  font-weight: bold;
+  font-size: 1.05em;
+  border-bottom: 1.5px solid #90caf9;
+}
+.el-table td {
+  background: transparent;
+  color: #1976d2;
+  border-bottom: 1px solid #e3f2fd;
+  padding: 8px 0;
+}
+.el-table tr:hover > td {
+  background: #e3f2fd !important;
+  transition: background 0.2s;
+}
+.el-pagination {
+  margin-top: 18px;
+  text-align: right;
+}
 .create-question-container {
   max-width: 1000px;
   margin: 40px auto;

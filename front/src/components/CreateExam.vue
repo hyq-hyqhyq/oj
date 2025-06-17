@@ -1,104 +1,102 @@
 <template>
-  <div>
+  <div class="index-bg">
     <Navbar />
-    <div class="create-exam-container">
-      <h1 class="header-title">创建新考试</h1>
+    <div class="index-container">
+      <div class="index-card">
+        <h1 class="index-title">创建新考试</h1>
 
-      <!-- 考试名称和时间部分 -->
-      <div class="section-container">
-        <!-- <div class="form-group">
-          <label>考试名称:</label>
-          <input v-model="examName" placeholder="请输入考试名称" class="large-input" />
-        </div> -->
-        <div class="form-group-horizontal">
-          <div class="form-group">
-            <label>开始时间:</label>
-            <input type="datetime-local" v-model="startTime" class="large-input" />
-          </div>
-          <div class="form-group">
-            <label>截止时间:</label>
-            <input type="datetime-local" v-model="endTime" class="large-input" />
+        <!-- 考试名称和时间部分 -->
+        <div class="index-section">
+          <div class="index-form-row">
+            <div class="index-form-group">
+              <label class="index-label-with-bar">开始时间</label>
+              <input type="datetime-local" v-model="startTime" class="index-input" />
+            </div>
+            <div class="index-form-group">
+              <label class="index-label-with-bar">截止时间</label>
+              <input type="datetime-local" v-model="endTime" class="index-input" />
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- 添加题目部分 -->
-      <div class="section-container">
-        <div class="form-group form-group--center">
-          <button @click="toggleAddQuestion" class="create-button">
-            {{ showAddQuestion ? "取消添加题目" : "添加题目" }}
-          </button>
-        </div>
-        <div v-if="showAddQuestion">
-          <div class="form-group">
-            <label>题目ID:</label>
-            <input v-model="questionId" placeholder="题目ID" class="large-input" />
+        <!-- 添加题目部分 -->
+        <div class="index-section">
+          <div class="index-btn-row">
+            <button @click="toggleAddQuestion" class="index-btn index-btn-primary">
+              {{ showAddQuestion ? "取消添加题目" : "添加题目" }}
+            </button>
           </div>
-          <div class="form-group">
-            <label>分值:</label>
-            <input v-model.number="questionScore" type="number" placeholder="分值" class="large-input" />
+          <div v-if="showAddQuestion" class="index-form-row">
+            <div class="index-form-group">
+              <label class="index-label-with-bar">题目ID</label>
+              <input v-model="questionId" placeholder="题目ID" class="index-input" />
+            </div>
+            <div class="index-form-group">
+              <label class="index-label-with-bar">分值</label>
+              <input v-model.number="questionScore" type="number" placeholder="分值" class="index-input" />
+            </div>
+            <div class="index-btn-row">
+              <button @click="addQuestion" class="index-btn index-btn-success">确认添加题目</button>
+            </div>
           </div>
-          <div class="form-group form-group--center">
-            <button @click="addQuestion" class="create-button">确认添加题目</button>
+          <table v-if="questions.length > 0" class="index-table">
+            <thead>
+              <tr>
+                <th>题目ID</th>
+                <th>分值</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(question, index) in questions" :key="index">
+                <td>{{ question.id }}</td>
+                <td>{{ question.score }}</td>
+                <td><button @click="removeQuestion(index)" class="index-btn index-btn-danger">删除</button></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="totals" v-if="questions.length > 0">
+            总题目数量: {{ questions.length }}
+            总分值: {{ totalScore }}
           </div>
         </div>
-        <table v-if="questions.length > 0" class="exam-table">
-          <thead>
-            <tr>
-              <th>题目ID</th>
-              <th>分值</th>
-              <th>操作</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(question, index) in questions" :key="index">
-              <td>{{ question.id }}</td>
-              <td>{{ question.score }}</td>
-              <td><button @click="removeQuestion(index)" class="remove-button">删除</button></td>
-            </tr>
-          </tbody>
-        </table>
-        <div class="totals" v-if="questions.length > 0">
-          总题目数量: {{ questions.length }}
-          总分值: {{ totalScore }}
-        </div>
-      </div>
 
-      <!-- 添加学生部分 -->
-      <div class="section-container">
-        <div class="form-group form-group--center">
-          <button @click="toggleAddStudent" class="create-button">
-            {{ showAddStudent ? "取消添加学生" : "添加学生" }}
-          </button>
-        </div>
-        <div v-if="showAddStudent">
-          <div class="form-group">
-            <label>学生ID:</label>
-            <input v-model="studentId" placeholder="学生ID" class="large-input" />
+        <!-- 添加学生部分 -->
+        <div class="index-section">
+          <div class="index-btn-row">
+            <button @click="toggleAddStudent" class="index-btn index-btn-primary">
+              {{ showAddStudent ? "取消添加学生" : "添加学生" }}
+            </button>
           </div>
-          <div class="form-group form-group--center">
-            <button @click="addStudent" class="create-button">确认添加学生</button>
+          <div v-if="showAddStudent" class="index-form-row">
+            <div class="index-form-group">
+              <label class="index-label-with-bar">学生ID</label>
+              <input v-model="studentId" placeholder="学生ID" class="index-input" />
+            </div>
+            <div class="index-btn-row">
+              <button @click="addStudent" class="index-btn index-btn-success">确认添加学生</button>
+            </div>
           </div>
+          <table v-if="students.length > 0" class="index-table">
+            <thead>
+              <tr>
+                <th>学生ID</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(student, index) in students" :key="index">
+                <td>{{ student.id }}</td>
+                <td><button @click="removeStudent(index)" class="index-btn index-btn-danger">删除</button></td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-        <table v-if="students.length > 0" class="student-table">
-          <thead>
-            <tr>
-              <th>学生ID</th>
-              <th>操作</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(student, index) in students" :key="index">
-              <td>{{ student.id }}</td>
-              <td><button @click="removeStudent(index)" class="remove-button">删除</button></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
 
-      <!-- 提交部分 -->
-      <div class="section-container submit-section">
-        <button @click="submitExam" class="create-button">完成创建</button>
+        <!-- 提交部分 -->
+        <div class="index-btn-row index-submit-row">
+          <button @click="submitExam" class="index-btn index-btn-primary">完成创建</button>
+        </div>
       </div>
     </div>
   </div>
@@ -229,150 +227,203 @@ export default {
 };
 </script>
 
-
 <style scoped>
-/* 主容器样式 */
-.create-exam-container {
-  max-width: 800px;
-  margin: 40px auto;
-  padding: 30px;
-  background-color: #f9f9f9;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+.index-bg {
+  min-height: 100vh;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(120deg, #e0eafc 0%, #cfdef3 100%);
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: row;
 }
-
-/* 部分容器样式 */
-.section-container {
-  margin-bottom: 20px;
-  background-color: #ffffff;
-  padding: 20px;
-  border: 1px solid #e0e0e0;
-  border-radius: 10px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+.index-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  margin-left: 210px;
+  min-width: 0;
+  min-height: 100vh;
+  box-sizing: border-box;
+  padding: 0 16px;
 }
-
-/* 表单组件样式 */
-.form-group {
-  margin-bottom: 20px;
+.index-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 6px 24px rgba(0, 123, 255, 0.08), 0 1.5px 6px rgba(0,0,0,0.04);
+  padding: 36px 32px 32px 32px;
+  margin-top: 32px;
+  max-width: 1100px;
+  width: 100%;
 }
-
-.form-group label {
+.index-title {
+  text-align: center;
+  font-size: 2.2rem;
+  color: #1976d2;
+  font-weight: 700;
+  margin-bottom: 32px;
+  letter-spacing: 2px;
+}
+.index-section {
+  margin-bottom: 32px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f0f0f0;
+}
+.index-section:last-child {
+  border-bottom: none;
+}
+.index-section-title {
+  font-size: 1.2rem;
+  color: #1976d2;
+  font-weight: 600;
+  margin-bottom: 18px;
+  letter-spacing: 1px;
+}
+.index-form-group {
+  margin-bottom: 18px;
+  display: flex;
+  flex-direction: column;
+}
+.index-form-group label {
+  font-weight: 500;
+  color: #1565c0;
+  margin-bottom: 7px;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding-left: 14px;
+  letter-spacing: 0.5px;
+}
+.index-label-with-bar::before {
+  content: '';
   display: block;
-  margin-bottom: 5px;
-  font-weight: bold;
-  color: #333;
+  width: 5px;
+  height: 22px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #42a5f5 0%, #1976d2 100%);
+  position: absolute;
+  left: 0;
+  top: 2px;
 }
-
-/* 输入框和文本区域样式 */
-.large-input,
-.large-textarea,
-select.large-input {
+.index-input,
+.index-textarea,
+.el-select.index-input {
   width: 100%;
   padding: 12px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  box-sizing: border-box;
+  border: 1px solid #cfd8dc;
+  border-radius: 6px;
   font-size: 16px;
+  background: #f7fbff;
+  transition: border 0.2s;
+  box-sizing: border-box;
 }
-
-.large-textarea {
-  height: 120px;
-  resize: vertical; /* 允许用户垂直调整大小 */
+.index-input:focus,
+.index-textarea:focus {
+  border-color: #1976d2;
+  outline: none;
+  background: #fff;
 }
-
-/* 标题样式 */
-.header-title {
-  text-align: center;
-  margin-bottom: 30px;
-  font-size: 2rem;
-  color: #007bff;
-  font-weight: bold;
-}
-
-/* 水平布局 */
-.form-group-horizontal {
+.index-form-row {
   display: flex;
-  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
 }
-
-.form-group-horizontal .form-group {
+.index-form-row .index-form-group {
   flex: 1;
+  min-width: 220px;
 }
-
-.form-group-horizontal .form-group + .form-group {
-  margin-left: 20px;
-}
-
-.form-group--center {
+.index-btn-row {
   display: flex;
   justify-content: center;
   margin-top: 10px;
+  flex-wrap: wrap;
 }
-
-/* 按钮样式 */
-.create-button,
-.remove-button,
-.submit-button {
-  padding: 10px 20px;
-  background-color: #007BFF;
-  color: white;
+.index-btn {
+  padding: 10px 28px;
   border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
   cursor: pointer;
-  border-radius: 5px;
-  font-size: 16px;
-  transition: background-color 0.3s, transform 0.2s;
-  margin: 5px; /* 保持间距 */
+  margin: 0 8px 8px 0;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.08);
 }
-
-.create-button:hover,
-.remove-button:hover,
-.submit-button:hover {
-  background-color: #0056b3;
+.index-btn-primary {
+  background: #1976d2;
+  color: #fff;
+}
+.index-btn-primary:hover {
+  background: #1257e1;
   transform: translateY(-2px);
 }
-
-.create-button:active,
-.remove-button:active,
-.submit-button:active {
-  transform: translateY(0);
-  background-color: #003f80;
-  transition: background-color 0.1s, transform 0.1s;
+.index-btn-success {
+  background: #43a047;
+  color: #fff;
 }
-
-/* 表格样式 */
-.exam-table,
-.student-table {
+.index-btn-success:hover {
+  background: #2e7d32;
+  transform: translateY(-2px);
+}
+.index-btn-danger {
+  background: #e53935;
+  color: #fff;
+}
+.index-btn-danger:hover {
+  background: #b71c1c;
+  transform: translateY(-2px);
+}
+.index-submit-row {
+  margin-top: 36px;
+}
+.index-table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 15px;
+  background: #f7fbff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.04);
 }
-
-.exam-table th,
-.exam-table td,
-.student-table th,
-.student-table td {
-  border: 1px solid #ccc;
+.index-table th,
+.index-table td {
+  border: 1px solid #cfd8dc;
   padding: 10px;
   text-align: left;
   font-size: 16px;
 }
-
-.exam-table th,
-.student-table th {
-  background-color: #f2f2f2;
+.index-table th {
+  background-color: #e3f2fd;
   font-weight: bold;
+  color: #1976d2;
 }
-
 .totals {
   margin-top: 10px;
   font-weight: bold;
   color: #333;
 }
-
-/* 提交按钮的区域 */
-.submit-section {
-  text-align: center;
-  margin-top: 30px;
+@media (max-width: 1100px) {
+  .index-container {
+    margin-left: 0;
+    padding: 0 4px;
+  }
+  .index-card {
+    max-width: 100%;
+  }
+}
+@media (max-width: 700px) {
+  .index-card {
+    padding: 18px 6px 18px 6px;
+  }
+  .index-form-row {
+    flex-direction: column;
+    gap: 0;
+  }
 }
 </style>

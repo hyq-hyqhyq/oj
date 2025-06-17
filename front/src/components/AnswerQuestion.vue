@@ -1,45 +1,41 @@
 <template>
-  <div>
+  <div class="index-bg">
     <Navbar />
-    <div class="container">
-      <div class="main-content">
-        <div class="card">
-          <h1 class="header-title">{{ question.title }}</h1>
-          <div class="card-content">
-            <div class="section">
-              <h2>题目介绍</h2>
-              <p>{{ question.description }}</p>
+    <div class="index-container">
+      <div class="index-main-content">
+        <div class="index-card">
+          <h1 class="index-title">{{ question.title }}</h1>
+          <div class="index-section">
+            <h2 class="index-section-title">题目介绍</h2>
+            <div class="index-desc">{{ question.description }}</div>
+          </div>
+          <div class="index-form-row">
+            <div class="index-form-group">
+              <label class="index-label-with-bar">示例输入</label>
+              <pre v-html="highlightedCode(question.input_example, 'sql')" class="index-code"></pre>
             </div>
-            <div class="section half-section-container">
-              <div class="half-section">
-                <h3>示例输入</h3>
-                <pre v-html="highlightedCode(question.input_example, 'sql')" class="code scrollable"></pre>
-              </div>
-              <div class="half-section">
-                <h3>示例输出</h3>
-                <pre v-html="highlightedCode(question.output_example, 'sql')" class="code scrollable"></pre>
-              </div>
+            <div class="index-form-group">
+              <label class="index-label-with-bar">示例输出</label>
+              <pre v-html="highlightedCode(question.output_example, 'sql')" class="index-code"></pre>
             </div>
-            <div class="section">
-              <h3>建表语句</h3>
-              <pre v-html="highlightedCode(question.create_code, 'sql')" class="code scrollable"></pre>
-            </div>
-            <div v-if="userRole > 0" class="section">
-              <h3>参考答案</h3>
-              <pre v-html="highlightedCode(question.answer_example, 'sql')" class="code scrollable"></pre>
-            </div>
-            <div class="section">
-              <h3>做题区域</h3>
-              <el-input
-                type="textarea"
-                v-model="userAnswer"
-                placeholder="在这里编写你的SQL代码..."
-                class="answer-input"
-              ></el-input>
+          </div>
+          <div class="index-section">
+            <h2 class="index-section-title">建表语句</h2>
+            <pre v-html="highlightedCode(question.create_code, 'sql')" class="index-code"></pre>
+          </div>
+          <div class="index-section">
+            <h2 class="index-section-title">做题区域</h2>
+            <el-input
+              type="textarea"
+              v-model="userAnswer"
+              placeholder="在这里编写你的SQL代码..."
+              class="index-textarea"
+            ></el-input>
+            <div class="index-btn-row">
               <el-button
-                type="success"
+                type="primary"
                 @click="submitAnswer"
-                class="submit-button"
+                class="index-btn index-btn-primary"
               >
                 提交代码
               </el-button>
@@ -47,18 +43,16 @@
           </div>
         </div>
       </div>
-      <div class="sidebar">
-        <div class="card">
-          <div class="card-content">
-            <h1 class="header-title">题目信息</h1>
-            <div>
-              <p><strong>题目ID：</strong>{{ question.id }}</p>
-              <p><strong>题目难度：</strong>{{ getDifficultyLabel(question.difficulty) }}</p>
-              <p><strong>已完成？</strong> {{ question.completed ? '是' : '否' }}</p>
-              <p><strong>通过率：</strong> {{ question.accuracy }}%</p>
-              <p><strong>完成率：</strong> {{ question.completion_rate }}%</p>
-              <p><strong>提交数：</strong> {{ question.submission_count }}</p>
-            </div>
+      <div class="index-sidebar">
+        <div class="index-card">
+          <h2 class="index-section-title">题目信息</h2>
+          <div class="index-info-list">
+            <p><strong>题目ID：</strong>{{ question.id }}</p>
+            <p><strong>题目难度：</strong>{{ getDifficultyLabel(question.difficulty) }}</p>
+            <p><strong>已完成？</strong> {{ question.completed ? '是' : '否' }}</p>
+            <p><strong>通过率：</strong> {{ question.accuracy }}%</p>
+            <p><strong>完成率：</strong> {{ question.completion_rate }}%</p>
+            <p><strong>提交数：</strong> {{ question.submission_count }}</p>
           </div>
         </div>
       </div>
@@ -70,7 +64,7 @@
 import Navbar from '@/components/Navbar.vue';
 import axios from 'axios';
 import hljs from 'highlight.js';
-import 'highlight.js/styles/github.css'; // 导入highlight.js的样式
+import 'highlight.js/styles/github.css';
 
 export default {
   components: {
@@ -90,7 +84,8 @@ export default {
         completed: false,
         accuracy: null,
         completion_rate: null,
-        submission_count: null
+        submission_count: null,
+        id: ''
       },
       userAnswer: '',
       userid: localStorage.getItem('userID'),
@@ -166,6 +161,7 @@ export default {
       }
     },
     highlightedCode(code, language) {
+      if (!code) return '';
       return hljs.highlight(code, { language }).value;
     }
   }
@@ -173,160 +169,226 @@ export default {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
-
-body {
-  font-family: 'Roboto', sans-serif;
-  background-color: #f4f4f9;
-}
-
-.container {
+.index-bg {
+  min-height: 100vh;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(120deg, #e0eafc 0%, #cfdef3 100%);
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
   display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  padding: 20px;
+  flex-direction: row;
 }
-
-.main-content {
-  flex: 3;
-  min-width: 60%;
-  margin-right: 20px;
-}
-
-.sidebar {
+.index-container {
   flex: 1;
-  min-width: 20%;
-  margin-left: 20px;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: center;
+  margin-left: 210px;
+  min-width: 0;
+  min-height: 100vh;
+  box-sizing: border-box;
+  padding: 32px 16px 0 16px;
+  gap: 32px;
 }
-
-.card {
-  border: 1px solid #ccc;
-  padding: 16px;
-  border-radius: 8px;
+.index-main-content {
+  flex: 3;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
 }
-
-
-
-.header-title {
-  font-size: 28px;
-  font-weight: 700;
-  color: #007bff;
-  text-align: center;
-  margin-bottom: 20px;
+.index-sidebar {
+  flex: 1;
+  min-width: 260px;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
 }
-
-.markdown {
-  text-align: left;
-  font-family: monospace;
-}
-
-.code-area {
+.index-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 6px 24px rgba(0, 123, 255, 0.08), 0 1.5px 6px rgba(0,0,0,0.04);
+  padding: 32px 28px 28px 28px;
+  margin-bottom: 0;
   width: 100%;
-  height: 100%;
-  font-family: monospace;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  padding: 8px;
   box-sizing: border-box;
 }
-.card-content {
-  padding: 20px;
-  font-size: 16px;
+.index-title {
+  text-align: center;
+  font-size: 2.2rem;
+  color: #1976d2;
+  font-weight: 700;
+  margin-bottom: 32px;
+  letter-spacing: 2px;
 }
-
-.section {
-  margin-bottom: 20px;
+.index-section {
+  margin-bottom: 24px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f0f0f0;
 }
-
-.half-section-container {
+.index-section:last-child {
+  border-bottom: none;
+}
+.index-section-title {
+  font-size: 1.18em;
+  font-weight: bold;
+  color: #1565c0;
+  margin-bottom: 18px;
+  letter-spacing: 1px;
   display: flex;
-  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  padding-left: 14px;
 }
-
-.half-section {
-  width: 48%;
+.index-section-title::before {
+  content: '';
+  display: block;
+  width: 5px;
+  height: 22px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #42a5f5 0%, #1976d2 100%);
+  position: absolute;
+  left: 0;
+  top: 2px;
 }
-
-h2, h3 {
-  font-size: 20px;
+.index-form-row {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 18px;
+}
+.index-form-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.index-label-with-bar {
   font-weight: 500;
-  color: #333;
-  margin-bottom: 10px;
+  color: #1565c0;
+  margin-bottom: 7px;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding-left: 14px;
+  letter-spacing: 0.5px;
 }
-
-p {
+.index-label-with-bar::before {
+  content: '';
+  display: block;
+  width: 5px;
+  height: 22px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #42a5f5 0%, #1976d2 100%);
+  position: absolute;
+  left: 0;
+  top: 2px;
+}
+.index-desc {
   font-size: 16px;
   color: #666;
-  line-height: 1.6;
+  line-height: 1.7;
+  margin-bottom: 0;
+  white-space: pre-wrap;
 }
-
-.code {
-  background-color: #f5f5f5;
+.index-code {
+  background: #f5f5f5;
   border-radius: 5px;
   padding: 10px;
   font-family: 'Source Code Pro', monospace;
   white-space: pre-wrap;
   word-wrap: break-word;
-}
-
-.scrollable {
   overflow-x: auto;
-  max-height: 200px;
-}
-
-.answer-input {
-  width: 100%;
-  min-height: 200px;
-  font-family: 'Source Code Pro', monospace;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-  padding: 10px;
-  margin-bottom: 20px;
-}
-
-.submit-button {
-  background-color: #28a745;
-  border: none;
-  color: white;
-  padding: 10px 20px;
-  font-size: 16px;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.submit-button:hover {
-  background-color: #218838;
-}
-
-.card-content p {
-  margin: 10px 0;
-}
-
-.card-content strong {
+  font-size: 15px;
   color: #333;
-  font-weight: 500;
 }
-
-@media (max-width: 768px) {
-  .container {
-    padding: 10px;
+.index-textarea {
+  width: 100%;
+  min-height: 180px;
+  margin-top: 18px;
+  padding: 12px;
+  font-size: 16px;
+  border: 1px solid #cfd8dc;
+  border-radius: 6px;
+  background: #f7fbff;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.06);
+  transition: border 0.2s;
+  resize: vertical;
+}
+.index-textarea:focus {
+  border-color: #1976d2;
+  outline: none;
+  background: #fff;
+}
+.index-btn-row {
+  display: flex;
+  justify-content: center;
+  margin-top: 18px;
+}
+.index-btn {
+  padding: 10px 28px;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  margin: 0 8px;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.08);
+}
+.index-btn-primary {
+  background: #1976d2;
+  color: #fff;
+}
+.index-btn-primary:hover {
+  background: #1257e1;
+  transform: translateY(-2px);
+}
+.index-info-list p {
+  font-size: 15px;
+  color: #444;
+  margin: 10px 0;
+  line-height: 1.6;
+}
+@media (max-width: 1100px) {
+  .index-container {
+    margin-left: 0;
+    padding: 0 4px;
+    flex-direction: column;
+    gap: 0;
   }
-
-  .main-content,
-  .sidebar {
-    flex: 1;
-    min-width: 100%;
-    margin: 0;
+  .index-main-content, .index-sidebar {
+    max-width: 100%;
   }
-
-  .main-content {
-    margin-bottom: 20px;
+}
+@media (max-width: 900px) {
+  .index-container {
+    flex-direction: column;
+    gap: 0;
   }
-
-  .half-section {
-    width: 100%;
-    margin-bottom: 10px;
+  .index-main-content, .index-sidebar {
+    max-width: 100%;
+  }
+}
+@media (max-width: 700px) {
+  .index-card {
+    padding: 18px 6px 18px 6px;
+  }
+  .index-container {
+    flex-direction: column;
+    gap: 0;
+    padding: 0 2px;
+  }
+  .index-main-content, .index-sidebar {
+    max-width: 100%;
+    min-width: 0;
+  }
+  .index-form-row {
+    flex-direction: column;
+    gap: 0;
   }
 }
 </style>

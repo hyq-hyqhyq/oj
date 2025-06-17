@@ -1,34 +1,33 @@
 <template>
-  <div>
+  <div class="main-bg">
     <Navbar />
-    <div class="teacher-home">
-      <!-- 顶部全宽欢迎卡片 -->
-      <div class="card top-card">
-        <h1>欢迎回来，<span class="highlight">{{ name }}</span>（教师）</h1>
-        <p>您已创建 <span class="highlight">{{ questionCount }}</span> 道题，<span class="highlight">{{ contestCount }}</span> 场考试。</p>
-        <div v-if="quote" class="daily-quote">每日一言：{{ quote }}</div>
-        <div class="current-time">当前时间：{{ currentTime }}</div>
-      </div>
-
-      <!-- 底部两栏：我的题目 + 我的考试 -->
-      <div class="bottom-container">
-        <!-- 左侧 -->
-        <div class="card column-card">
-          <h2>我的题目</h2>
-          <el-table :data="questions" style="width: 100%">
-            <el-table-column prop="id" label="题目ID" align="center" />
-            <el-table-column prop="title" label="标题" align="center" />
-            <el-table-column prop="difficulty" label="难度" align="center" />
-          </el-table>
-        </div>
-        <!-- 右侧 -->
-        <div class="card column-card">
-          <h2>我的考试</h2>
-          <el-table :data="contests" style="width: 100%">
-            <el-table-column prop="id" label="考试ID" align="center" />
-            <el-table-column prop="start_time" label="开始时间" align="center" />
-            <el-table-column prop="end_time" label="结束时间" align="center" />
-          </el-table>
+    <div class="main-content">
+      <div class="dashboard-grid">
+        <div class="card teacher-home-card">
+          <div class="teacher-home">
+            <div class="card top-card">
+              <h2>教师首页</h2>
+              <h1>欢迎回来，教师<span class="highlight">{{ name }}</span></h1>
+            </div>
+            <div class="bottom-container">
+              <div class="card column-card">
+                <h2>我的题目</h2>
+                <el-table :data="questions" style="width: 100%">
+                  <el-table-column prop="id" label="题目ID" align="center" />
+                  <el-table-column prop="title" label="标题" align="center" />
+                  <el-table-column prop="difficulty" label="难度" align="center" />
+                </el-table>
+              </div>
+              <div class="card column-card">
+                <h2>我的考试</h2>
+                <el-table :data="contests" style="width: 100%">
+                  <el-table-column prop="id" label="考试ID" align="center" />
+                  <el-table-column prop="start_time" label="开始时间" align="center" />
+                  <el-table-column prop="end_time" label="结束时间" align="center" />
+                </el-table>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -49,15 +48,6 @@ export default {
       contestCount: 0,
       questions: [],
       contests: [],
-      quote: '',
-      quotes: [
-        "好的题目是最好的教学语言。",
-        "教书育人，始于一题一解之间。",
-        "每一次出题，都是一次思维的打磨。",
-        "您的每一场考试，都是学生成长的阶梯。",
-        "耐心引导，是教师最有力的智慧。"
-      ],
-      currentTime: new Date().toLocaleString()
     };
   },
   mounted() {
@@ -105,6 +95,61 @@ export default {
 </script>
 
 <style scoped>
+.main-bg {
+  min-height: 100vh;
+  background: linear-gradient(120deg, #e0eafc 0%, #cfdef3 100%);
+  display: flex;
+}
+.main-content {
+  margin-left: 210px;
+  flex: 1;
+  padding: 40px 40px 40px 40px;
+  min-height: 100vh;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+.dashboard-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+.card.teacher-home-card {
+  background: transparent;
+  border-radius: 18px;
+  box-shadow: none;
+  padding: 24px 32px 28px 32px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+}
+.card.teacher-home-card h2 {
+  font-size: 1.18em;
+  font-weight: bold;
+  color: #1565c0;
+  margin-bottom: 18px;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding-left: 14px;
+}
+.card.teacher-home-card h2::before {
+  content: '';
+  display: block;
+  width: 5px;
+  height: 22px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #42a5f5 0%, #1976d2 100%);
+  position: absolute;
+  left: 0;
+  top: 2px;
+}
+
 .teacher-home {
   padding: 20px;
 }
@@ -118,10 +163,22 @@ export default {
 /* 下方两栏平均分 */
 .bottom-container {
   display: flex;
-  gap: 20px;
+  gap: 5px;
+  flex-wrap: wrap;
+  justify-content: space-between;
 }
 .column-card {
   flex: 1;
+  width: 100%;
+  min-width: 260px;
+  max-width: 600px;
+  margin: 0 10px;
+  background: none;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
 }
 
 /* 卡片通用样式 */
@@ -138,19 +195,23 @@ export default {
   font-weight: bold;
 }
 
-/* 普通字体每日一言 */
-.daily-quote {
-  margin-top: 10px;
-  font-size: 1em;
-  color: #555;
-  font-style: normal;
-  font-weight: normal;
+@media (max-width: 1200px) {
+  .card.teacher-home-card {
+    max-width: 90vw;
+  }
+  .bottom-container {
+    flex-direction: column;
+    gap: 16px;
+  }
+  .column-card {
+    max-width: 100%;
+    margin: 0;
+  }
 }
-
-/* 当前时间样式 */
-.current-time {
-  margin-top: 10px;
-  color: #888;
-  font-size: 0.9em;
+@media (max-width: 700px) {
+  .card.teacher-home-card {
+    max-width: 98vw;
+    padding: 12px 6px;
+  }
 }
 </style>

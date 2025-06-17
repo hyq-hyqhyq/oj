@@ -478,8 +478,8 @@ class GetScore(Resource):
 # judge
 # 定义返回结果的字段
 
-ip_address = 'mysql+pymysql://root:20050624Ljh_sh@localhost/test'
-ip_address_no_db = 'mysql+pymysql://root:20050624Ljh_sh@localhost'
+ip_address = 'mysql+pymysql://root:20041108Xw@localhost/test'
+ip_address_no_db = 'mysql+pymysql://root:20041108Xw@localhost'
 
 class Judge(Resource):
     def execute_sql(self, code):
@@ -754,9 +754,9 @@ class ManageUsers(Resource):
         for es in models.ExamStudent.query.filter_by(student_id=uid).all():
             db.session.delete(es)
         # 删除助教-学生关联
-        for eas in models.ExamAssistantStudent.query.filter_by(assistant_id=uid).all():
+        for eas in models.AssistantStudent.query.filter_by(assistant_id=uid).all():
             db.session.delete(eas)
-        for eas in models.ExamAssistantStudent.query.filter_by(student_id=uid).all():
+        for eas in models.AssistantStudent.query.filter_by(student_id=uid).all():
             db.session.delete(eas)
         # 删除提交记录
         for sub in models.Submission.query.filter_by(student_id=uid).all():
