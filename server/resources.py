@@ -478,8 +478,8 @@ class GetScore(Resource):
 # judge
 # 定义返回结果的字段
 
-ip_address = 'mysql+pymysql://root:20041108Xw@localhost/test'
-ip_address_no_db = 'mysql+pymysql://root:20041108Xw@localhost'
+ip_address = 'mysql+pymysql://root:7511881@localhost/test'
+ip_address_no_db = 'mysql+pymysql://root:7511881@localhost'
 
 class Judge(Resource):
     def execute_sql(self, code):
@@ -619,7 +619,7 @@ class Judge(Resource):
             record.status = JUDGE_ACCEPTED
         else:
             finalresult[1] = result_map[min(error_list)]
-            pass_rate = int(10000 * (1.0 - len(error_list) * 1.0 / len(results))) / 100.0 # 可能需要考虑保留小数的问题？
+            pass_rate = (1.0 - len(error_list) * 1.0 / len(results))
             record.status = min(error_list)
 
         record.pass_rate = pass_rate
