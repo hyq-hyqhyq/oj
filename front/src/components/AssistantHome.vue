@@ -23,19 +23,6 @@
                   <el-table-column prop="username" label="学生用户名" align="center" show-overflow-tooltip />
                 </el-table>
               </div>
-<<<<<<< HEAD
-=======
-              <!-- 右侧：待批阅提交 -->
-              <div class="card right-column">
-                <h2>待批阅提交</h2>
-                <el-table :data="pendingSubmits" style="width: 100%" fit>
-                  <el-table-column prop="id" label="提交ID" align="center" show-overflow-tooltip />
-                  <el-table-column prop="student_id" label="学生ID" align="center" show-overflow-tooltip />
-                  <el-table-column prop="question_id" label="题目ID" align="center" show-overflow-tooltip />
-                  <el-table-column prop="submit_time" label="提交时间" align="center" show-overflow-tooltip />
-                </el-table>
-              </div>
->>>>>>> b145e3e48afcecf601ad1afdd3ddbbb44eaa0ec0
             </div>
           </div>
         </div>
