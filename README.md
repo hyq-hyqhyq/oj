@@ -4,6 +4,14 @@
 
 ---
 
+## 开发环境
+-  操作系统：Windows11
+-  数据库：mysql  Ver 8.0.41 for Win64 on x86_64 (MySQL Community Server - GPL)
+-  后端编程语言：Python 3.13.1 64-bit
+-  前端编程语言：vue@2.7.16
+
+---
+
 ## 目录结构
 
 ```
@@ -11,7 +19,6 @@ oj/
 ├── front/                  # 前端 Vue 项目目录
 │   ├── src/                # 前端源码
 │   └── ...                 # 其他前端相关文件
-├── imgs/                   # 图片资源文件目录
 ├── server/                 # 后端 Flask 项目目录
 │   ├── models.py           # 数据库模型定义
 │   ├── resources.py        # 主要代码，实现各功能

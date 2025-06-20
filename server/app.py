@@ -20,8 +20,6 @@ def create_app():
     
     api.add_resource(Answer, '/api/answer')
     api.add_resource(AnsweredQuestions, '/api/answeredquestions')
-    api.add_resource(Community, '/api/community')
-    api.add_resource(CommunityList, '/api/communitylist')
     api.add_resource(ContestList, '/api/contestlist')
     api.add_resource(Contest, '/api/contest', '/api/contest/<int:contest_id>')
     api.add_resource(ContestQuestion, '/api/contest-question')
