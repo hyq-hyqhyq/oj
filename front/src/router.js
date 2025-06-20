@@ -13,9 +13,6 @@ import Submit from '@/components/Submit'
 import Question from "@/components/Question"
 import AnswerQuestion from '@/components/AnswerQuestion.vue'
 import Contest from "@/components/Contest"
-import Community from "@/components/Community"
-import ArticleEditor from "@/components/ArticleEditor"
-import ArticleDetails from "@/components/ArticleDetails"
 import Contest_Question from "@/components/Contest_Question"
 import AnswerQuestion_contest from '@/components/AnswerQuestion_contest'
 import ContestStatistics from '@/components/Statistics'
@@ -91,21 +88,6 @@ export default new Router({
       path: '/contest',
       name: 'contest',
       component: Contest
-    },
-    {
-      path: '/community',
-      name: 'community',
-      component: Community
-    },
-    {
-      path: '/community/edit',
-      name: 'article-editor',
-      component: ArticleEditor
-    },
-    {
-      path: '/community/:id',
-      name: 'article-details',
-      component: ArticleDetails
     },
     {
       path: '/contest/question/:id',

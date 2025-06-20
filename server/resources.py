@@ -491,8 +491,8 @@ class GetScore(Resource):
 # judge
 # 定义返回结果的字段
 
-ip_address = 'mysql+pymysql://root:20050624Ljh_sh@localhost/test'
-ip_address_no_db = 'mysql+pymysql://root:20050624Ljh_sh@localhost'
+ip_address = 'mysql+pymysql://root:7511881@localhost/test'
+ip_address_no_db = 'mysql+pymysql://root:7511881@localhost'
 
 class Judge(Resource):
     def execute_sql(self, code):
