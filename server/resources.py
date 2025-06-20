@@ -632,7 +632,7 @@ class Judge(Resource):
             record.status = JUDGE_ACCEPTED
         else:
             finalresult[1] = result_map[min(error_list)]
-            pass_rate = int(10000 * (1.0 - len(error_list) * 1.0 / len(results))) / 100.0 # 可能需要考虑保留小数的问题？
+            pass_rate = (1.0 - len(error_list) * 1.0 / len(results))
             record.status = min(error_list)
 
         record.pass_rate = pass_rate
