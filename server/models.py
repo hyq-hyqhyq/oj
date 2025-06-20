@@ -112,17 +112,3 @@ class Submission(db.Model):
     __table_args__ = (
         CheckConstraint('pass_rate BETWEEN 0 AND 1', name='check_pass_rate'),
     )
-
-# 文章表
-class Article(db.Model):
-    __tablename__ = 'Article'
-    id = Column(INTEGER, primary_key=True, autoincrement=True)
-    title = Column(VARCHAR(1000), nullable=False)
-    user_id = Column(BIGINT, ForeignKey('User.id'))
-    question_id = Column(INTEGER, ForeignKey('Question.id'))
-    is_notice = Column(BOOLEAN, nullable=False)
-    content = Column(TEXT, nullable=False)
-    publish_time = Column(TIMESTAMP, nullable=False)
-    last_modify_time = Column(TIMESTAMP, nullable=False, server_default=text('CURRENT_TIMESTAMP'))
-    user = db.relationship('User', backref='articles')
-    question = db.relationship('Question', backref='articles')

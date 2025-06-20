@@ -90,17 +90,3 @@ create table IF NOT EXISTS Submission (
     foreign key (exam_id) references Exam(id),
     foreign key (question_id) references Question(id)
 );
-
--- 文章表 (Article)
-create table IF NOT EXISTS Article (
-    id int auto_increment primary key,
-    title varchar(1000) not null,
-    user_id bigint,
-    question_id int,
-    is_notice boolean not null,
-    content text not null,
-    publish_time timestamp not null,
-    last_modify_time timestamp not null default current_timestamp,
-    foreign key (user_id) references User(id),
-    foreign key (question_id) references Question(id)
-);
